@@ -1,6 +1,6 @@
 # Large Language Models Can Solve Real-World Planning Rigorously with Formal Verification Tools
 
-Codes and Dataset for the Paper "[Large Language Models Can Solve Real-World Planning Rigorously with Formal Verification Tools](https://arxiv.org/pdf/2404.11891)".
+Codes and Dataset for the Paper "[Large Language Models Can Solve Real-World Planning Rigorously with Formal Verification Tools (NAACL'25)](https://arxiv.org/pdf/2404.11891)".
 
 ## Framework
 <img src="./imgs/fm_travelplanner_overview.png" width="800px" alt="s" />
@@ -30,3 +30,13 @@ The file for satisfiable plan generation experiment is `test_travelplanner.py`. 
 
 ## Prompts
 The prompts we used are included in the `prompts` folder
+
+## Citation
+```md
+@article{hao2024large,
+  title={Large Language Models Can Solve Real-World Planning Rigorously with Formal Verification Tools},
+  author={Hao, Yilun and Chen, Yongchao and Zhang, Yang and Fan, Chuchu},
+  journal={arXiv preprint arXiv:2404.11891},
+  year={2024}
+}
+```
