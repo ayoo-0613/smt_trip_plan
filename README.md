@@ -28,6 +28,11 @@ The file for satisfiable plan generation experiment is `test_travelplanner.py`. 
 * Run test_travelplanner_interactive.py for unsatisfiable interactive plan repair experiment for TravelPlanner. Follow the instructions in file to first collect initial codes and then do the plan repair. 
 * Run test_unsat.py for unsatisfiable interactive plan repair experiment for UnsatChristmas. Follow the instructions in file to first collect initial codes and then do the plan repair. 
 
+## Evaluation
+For satisfiable plan solving, after running experiments for a dataset (train/ validation/ test), run `convert_json.py` to convert the generated plan txt file to json files, and then run `collect_plans.py` to collect all plans to form a single jsonl file. Then, you can use this jsonl file and follow TravelPlanner's evaluation method to evaluate (either through [leaderboard](https://huggingface.co/spaces/osunlp/TravelPlannerLeaderboard) or through `eval.py` in TravelPlanner codebase)
+
+For unsatisfiable plan repair, you can use the `check_plans()` function in `collect_plans.py` to check for successful plan generation.
+
 ## Prompts
 The prompts we used are included in the `prompts` folder
 
