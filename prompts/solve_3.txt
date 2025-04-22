@@ -8,5 +8,4 @@
     else:
         print('not ok')
         c = s.unsat_core()
-        unsat_cores.append(str(c))
         print(c)
