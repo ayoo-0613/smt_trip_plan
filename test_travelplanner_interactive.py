@@ -213,7 +213,7 @@ def count_unsat(unsat_cores):
     reason = reasons[index[0]]
     return reason
 
-def interact(query, unsat_cores, code_list, s, suggestions, preference = None):
+def interact(query, unsat_cores, code_list, s, suggestions, preference = None, model_version = 'gpt-4'):
     FlightSearch = Flights()
     DistanceSearch = GoogleDistanceMatrix()
     AccommodationSearch = Accommodations()
@@ -231,7 +231,7 @@ def interact(query, unsat_cores, code_list, s, suggestions, preference = None):
     # info_suggest_prompt += str(query) + '\nCollected information: \n' + '[]'
     iter = 1
     while True:
-        response = GPT_response(info_suggest_prompt, 'gpt-4')
+        response = GPT_response(info_suggest_prompt, model_version)
         action = response.split('[')[0]
         print(response)
         # DrivingCheck, DrivingSearch, FlightCheck, FlightSearch, AccommodationSearch, TypeSearch
@@ -305,17 +305,17 @@ def interact(query, unsat_cores, code_list, s, suggestions, preference = None):
     else:
         code_change += code_list[change_index] + '\nModified constraints: \n' + suggestion
     json_change += str(query) + '\nModified constraints: \n' + suggestion
-    new_code = GPT_response(code_change, 'gpt-4')
+    new_code = GPT_response(code_change, model_version)
     if not 'destination' in suggestion: new_code = format_check(code_list, new_code)
     else: new_code = 'unsat_cores = []\n' + new_code
     code_list[change_index] = new_code
-    new_json = GPT_response(json_change, 'gpt-4')
+    new_json = GPT_response(json_change, model_version)
     print(new_code)
     print(new_json)
     return '\n'.join(code_list), code_list, json.loads(new_json), info_suggest_prompt, suggestions
 
 
-def pipeline(query, mode, user_mode, index):
+def pipeline(query, mode, user_mode, index, model_version = None):
     path_read =  f'output/{mode}/initial_codes/{index}/'
     path =  f'output/{mode}/{user_mode}/{index}/'
     if not os.path.exists(path):
@@ -374,13 +374,14 @@ def pipeline(query, mode, user_mode, index):
 
     indent = {3: '\n    ', 5: '\n            ', 7:'\n                '}
     suggestions = []
+    llm_model_name = model_version or 'gpt-4o'
     for i in range(10):
         local_vars = locals()
         exec(codes, globals(), local_vars)
         if os.path.exists(path+'plans/' + 'plan.txt'):
             print('Found plan')
             break
-        codes, code_list, query_json, info_suggest_prompt, suggestions = interact(query_json, local_vars['unsat_cores'], code_list, local_vars['s'], suggestions, preference = user_mode)
+        codes, code_list, query_json, info_suggest_prompt, suggestions = interact(query_json, local_vars['unsat_cores'], code_list, local_vars['s'], suggestions, preference = user_mode, model_version = llm_model_name)
         if suggestions[-1] == 'no change' and suggestions[-2] == 'no change' and suggestions[-3] == 'no change':
             raise Exception("Sorry, three consecutive invalid suggestions")
         with open(path+'codes/' + 'codes{}.txt'.format(i), 'w') as f:
@@ -448,6 +449,7 @@ def collect_inital_codes(query, mode, index, model_version = None):
     plan = ''
     plan_json = ''
     success = False
+    llm_model_name = model_version or 'gpt-4o'
     
     query_json = query
     with open(path+'plans/' + 'query.json', 'w') as f:
@@ -456,7 +458,7 @@ def collect_inital_codes(query, mode, index, model_version = None):
 
     print('-----------------query in json format-----------------\n',query_json)
 
-    steps = GPT_response(constraint_to_step_prompt + str(query_json) + '\n' + 'Steps:\n', model_version)
+    steps = GPT_response(constraint_to_step_prompt + str(query_json) + '\n' + 'Steps:\n', llm_model_name)
 
     with open(path+'plans/' + 'steps.txt', 'w') as f:
       f.write(steps)
@@ -475,7 +477,7 @@ def collect_inital_codes(query, mode, index, model_version = None):
                     print('!!!!!!!!!!KEY!!!!!!!!!!\n', key, '\n')
                     prompt = step_to_code_prompts[key]
                     step_key = key
-            code = GPT_response(prompt + lines, model_version)
+            code = GPT_response(prompt + lines, llm_model_name)
             code = code.replace('```python', '')
             code = code.replace('```', '')
             if step_key != 'Destination cities': 
@@ -537,14 +539,15 @@ if __name__ == '__main__':
 
     tools_list = ["flights","attractions","accommodations","restaurants","googleDistanceMatrix","cities"]
     csvFile = pandas.read_csv('travelplanner_unsat.csv')
+    model_version = os.environ.get('TRAVEL_PLANNER_MODEL', 'gpt-4o')
     for mode in ['type', 'all_yes', 'transportation', 'budget', 'destination']:
         for i in range(len(csvFile)):
             try:
                 plan_json = json.loads(csvFile.iloc[i]['query'].replace("\'", "\"").replace("None", "null"))
                 # First collect inital codes 
-                collect_inital_codes(plan_json, 'interactive_large', i+1, 'gpt-4o')
+                collect_inital_codes(plan_json, 'interactive_large', i+1, model_version)
                 # Then do the plan repair 
-                pipeline(plan_json, 'interactive_large', mode, i+1)
+                pipeline(plan_json, 'interactive_large', mode, i+1, model_version)
             except Exception as e:
                 path =  f'output/interactive_large/{mode}/{i+1}/'
                 with open(path+'plans/' + 'error.txt', 'w') as f:

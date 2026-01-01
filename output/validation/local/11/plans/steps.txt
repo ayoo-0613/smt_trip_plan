@@ -1,0 +1,54 @@
+# Steps for Natural Language Query: Minneapolis to Seattle Travel Plan
+# 
+# Destination Cities
+# Set cities to be a list includes Seattle only
+# Loop through cities for 1 destination cities
+# Initialize Z3 solver s
+# Set 'city' variable to be indexes of 1 destination cities
+# Assert 'city' variable equal to city index
+
+# Departure Dates
+# Set 'departure_dates' variables for 2 transportations between cities
+# Assert first transportation happens at first day (day 0), last transportation happens at last day (day 2)
+
+# Transportation Methods
+# Set transportation method (flight, self-driving, taxi) variable for 2 transportations between cities
+# Assert only one of flight, self-driving, or taxi is used for 2 transportations between cities
+
+# Flight Information
+# Run FlightSearch to get flight info for Minneapolis as origin, list of cities, city_0, and dates ["2022-03-29", "2022-03-30", "2022-03-31"]
+# Get specific flight price info with Minneapolis as origin and final destination, specific city, and departure date for 2 transportations
+# Set 'flight_index' variable for 2 transportations
+# Assert 2 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight
+
+# Driving Information
+# Run DistanceSearch to get driving info for Minneapolis as origin and city_0
+# Get specific driving distance info with Minneapolis as origin and final destination, specific city, and departure date for 2 transportations
+# Assert driving info is not empty if driving
+# Calculate self-driving and taxi price for transportation based on driving distance
+
+# Restaurant Information
+# Get arrivals and city list for each day based on 2 transportations, 3 total travel day, and departure dates variables
+# Run RestaurantSearch to get restaurant price info for city_0
+# Set 'restaurant_in_which_city' variables for 9 (3 meals per day, 3 days) meals
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+# Set 'restaurant_index' variables for 9 (3 meals per day, 3 days) meals
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range
+
+# Attraction Information
+# Run AttractionSearch to get attraction info for city_0
+# Set 'attraction_in_which_city' variables for 3 (1 per day) attractions
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+# Set 'attraction_index' variables for 3 (1 per day) attractions
+# For each 'attraction_index', get specific length info based on attraction in which city variable
+
+# Accommodation Information
+# Run AccommodationSearch to get accommodation info and constraints for city_0
+# Set 'accommodation_index' variables for 1 (1 per city) accommodations
+# For each 'accommodation_index', get specific price info, calculate room needs, assert minimum night info is valid
+
+# Budget
+# Set budget limit variable to be 1800
+# Add transportation price based on chosen method
+# Add restaurant and accommodation prices to total spent
+# Assert current spent is within budget

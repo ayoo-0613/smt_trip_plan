@@ -1,0 +1,7 @@
+########## Departure dates response##########
+    # Set 'departure_dates' variables for 2 transportations between cities
+    variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+    # Assert first transportation happens at first day (day 0), last transportation happens at last day (day 2)
+    s.assert_and_track(variables['departure_dates'][0] == 0,  'travel start date')
+    s.assert_and_track(variables['departure_dates'][1] == 2,  'travel end date')
+    ########## Departure dates response ends##########

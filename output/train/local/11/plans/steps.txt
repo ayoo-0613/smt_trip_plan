@@ -1,0 +1,82 @@
+# Steps for Creating a Travel Plan from Houston to Utah  
+
+Based on the Natural Language Query:  
+**"Could you assist in creating a travel plan for one person, starting from Houston and heading to Utah for a week? The visit will be from the 23rd of March to the 29th of March, 2022, and will cover 3 different cities in Utah. The budget for this trip is set at $7,700."**
+
+---
+
+### **Destination Cities**  
+# Set cities to be a list includes 3 different cities in Utah (e.g., Salt Lake City, Park City, Moab)  
+# Loop through cities for 3 destination cities  
+# Initialize Z3 solver s  
+# Set 'city' variable to be indexes of 3 destination cities  
+
+---
+
+### **Departure Dates**  
+# Set 'departure_dates' variables for 4 transportations between cities (including arrival and departure dates)  
+# Assert first transportation happens at the start date (March 23rd, 2022)  
+# Assert last transportation happens at the end date (March 29th, 2022)  
+
+---
+
+### **Transportation Methods**  
+# Set transportation method (flight, self-driving, taxi) variable for 4 transportations between cities  
+# Assert only one of flight, self-driving, or taxi is used for all transportations  
+# Assert all 4 transportations are not flights  
+
+---
+
+### **Flight Information**  
+# Run FlightSearch to get flight info for Houston as origin, list of cities, and dates ["2022-03-23", "2022-03-29"]  
+# Get specific flight price info with Houston as origin and final destination, specific city, and departure date for 4 transportations  
+# Set 'flight_index' variable for 4 transportations  
+# Assert 4 'flight_index' variables are within valid range if taking flight  
+# Assert flight index to be -1 if not taking flight  
+
+---
+
+### **Driving Information**  
+# Run DistanceSearch to get driving info for Houston as origin and each city in Utah  
+# Get specific driving distance info with Houston as origin and final destination, specific city, and departure date for 4 transportations  
+# Assert driving info is not empty if driving  
+# Calculate self-driving and taxi price for 1 person and 4 transportations based on driving distance  
+# Get driving arrival time with Houston as origin and final destination, specific city, and departure date for 4 transportations  
+
+---
+
+### **Restaurant Information**  
+# Get arrivals and city list for each day based on 4 transportations, 7 total travel day, and departure dates variables  
+# Run RestaurantSearch to get restaurant price info for each city in Utah  
+# Set 'restaurant_in_which_city' variables for 21 (3 meals per day × 7 days) meals  
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'restaurant_index' variables for 21 (3 meals per day × 7 days) meals  
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, and calculate restaurant price for 1 person  
+
+---
+
+### **Attraction Information**  
+# Run AttractionSearch to get attraction info for each city in Utah  
+# Set 'attraction_in_which_city' variables for 7 (1 per day) attractions  
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'attraction_index' variables for 7 (1 per day) attractions  
+# For each 'attraction_index', get specific length info based on attraction in which city variable, and assert index are within valid range  
+
+---
+
+### **Accommodation Information**  
+# Run AccommodationSearch to get accommodation info and constraints for each city in Utah  
+# Set 'accommodation_index' variables for 3 (1 per city) accommodations  
+# For each 'accommodation_index', get specific price info based on accommodation in which city variable, calculate number of rooms needed for 1 person, and calculate accommodation price  
+# For each city, get accommodation minimum night info and assert it to be less than the days stay in this city  
+
+---
+
+### **Budget**  
+# Set budget limit variable to be 7700  
+# Add 4 transportation price to spent, according to whether transportation method is flight, self-driving, or taxi  
+# Add restaurant price to spent  
+# Add accommodation price to spent  
+# Assert current spent is within budget  
+
+---

@@ -1,0 +1,12 @@
+########## Accommodation response##########
+    # Run AccommodationSearch to get accommodation info and accommodation constraints for city_0
+    accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0])
+    
+    # Set 'accommodation_index' variables for 2 (1 per day) accommodations 
+    variables['accommodation_index'] = [Int('accommodation_0_index'), Int('accommodation_1_index')]
+    
+    # For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range
+    for i, variable in enumerate(variables['accommodation_index']):
+        accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+        s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), 'valid accommodation index')
+    ########## Accommodation response ends##########

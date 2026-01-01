@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "tools/planner")))
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../tools/planner")))
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import importlib
+import ast
 from typing import List, Dict, Any
 import tiktoken
 from pandas import DataFrame
@@ -27,6 +28,7 @@ from tqdm import tqdm
 from langchain_google_genai import ChatGoogleGenerativeAI
 import argparse
 from datasets import load_dataset
+from contextlib import nullcontext
 import os
 import pdb
 from openai_func import *
@@ -40,10 +42,52 @@ from tools.googleDistanceMatrix.apis import *
 from tools.restaurants.apis import *
 import time
 
-OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 # GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
 actionMapping = {"FlightSearch":"flights","AttractionSearch":"attractions","GoogleDistanceMatrix":"googleDistanceMatrix","accommodationSearch":"accommodation","RestaurantSearch":"restaurants","CitySearch":"cities"}
+
+
+def _safe_literal_eval(value):
+    if pd.isna(value):
+        return None
+    if isinstance(value, (list, dict, tuple)):
+        return value
+    try:
+        return ast.literal_eval(value)
+    except (ValueError, SyntaxError):
+        return None
+
+
+def _row_to_local_query(row: pd.Series) -> str:
+    dests = _safe_literal_eval(row.get('dest')) or []
+    if isinstance(dests, str):
+        dests = [dests]
+    dates = _safe_literal_eval(row.get('date')) or []
+    days = int(row.get('days', len(dates)))
+    people = int(row.get('people_number', 1))
+    visiting_cities = int(row.get('visiting_city_number', max(1, len(dests) or 1)))
+    budget = int(float(row.get('budget', 0)))
+
+    dest_phrase = ', '.join(dests) if dests else 'the destination'
+    date_phrase = ', '.join(dates) if dates else 'the planned travel dates'
+    people_phrase = 'person' if people == 1 else 'people'
+    city_phrase = 'city' if visiting_cities == 1 else 'cities'
+
+    query_text = (
+        f"Please plan a {days}-day trip for {people} {people_phrase} departing from {row.get('org')} "
+        f"to visit {dest_phrase}. The itinerary should cover {visiting_cities} destination {city_phrase} "
+        f"between {date_phrase}. The total budget is ${budget}."
+    )
+    return query_text
+
+
+def load_local_query_dataset(csv_path: str) -> List[Dict[str, Any]]:
+    df = pd.read_csv(csv_path)
+    queries: List[Dict[str, Any]] = []
+    for _, row in df.iterrows():
+        queries.append({"query": _row_to_local_query(row)})
+    return queries
 
 
 def convert_to_int(real):
@@ -181,11 +225,12 @@ def generate_as_plan(s, variables, query):
     return f'Destination cities: {cities},\nTransportation dates: {departure_dates},\nTransportation methods between cities: {transportation_info},\nRestaurants (3 meals per day): {restaurant_city_list},\nAttractions (1 per day): {attraction_city_list},\nAccommodations (1 per city): {accommodation_city_list}'
 
 def pipeline(query, mode, model, index, model_version = None):
-    path =  f'output/{mode}/gpt_nl/{index}/'
+    # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
+    path = f'output/{mode}/{model}/{index}/'
     if not os.path.exists(path):
         os.makedirs(path)
-        os.makedirs(path+'codes/')
-        os.makedirs(path+'plans/')
+        os.makedirs(path + 'codes/')
+        os.makedirs(path + 'plans/')
     # setup
     with open('prompts/query_to_json.txt', 'r') as file:
         query_to_json_prompt = file.read()
@@ -236,10 +281,25 @@ def pipeline(query, mode, model, index, model_version = None):
     plan_json = ''
     codes = ''
     success = False
+    if model == 'local':
+        llm_model_name = model_version or 'local'
+    elif model == 'gpt':
+        llm_model_name = model_version or 'gpt-4o'
+    elif model == 'deepseek-chat':
+        llm_model_name = model_version or 'deepseek-chat'
+    elif model == 'claude':
+        llm_model_name = model_version or 'claude-3-opus-20240229'
+    elif model == 'mixtral':
+        llm_model_name = model_version or 'mistral-large-latest'
+    else:
+        raise ValueError(f"Unknown model type: {model}")
+
     
     try:
         # json generated for postprocess only, not used in inputs to LLMs
-        if model == 'gpt': query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', model_version).replace('```json', '').replace('```', ''))
+        if model in ('gpt', 'local', 'deepseek-chat'):
+            query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
+                            .replace('```json', '').replace('```', ''))
         elif model == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         elif model == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
         else: ...
@@ -254,7 +314,7 @@ def pipeline(query, mode, model, index, model_version = None):
 
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
-        if model == 'gpt': steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', model_version)
+        if model in ('gpt', 'local', 'deepseek-chat'): steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
         elif model == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         elif model == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
@@ -266,31 +326,67 @@ def pipeline(query, mode, model, index, model_version = None):
         f.close()
 
         steps = steps.split('\n\n')
-        # pdb.set_trace()
-        for step in steps:
-            print('!!!!!!!!!!STEP!!!!!!!!!!\n', step, '\n')
-            try: 
-                lines = step.split('# \n')[1]
-            except:
-                lines = step.split('#\n')[1]
+        for idx, step in enumerate(steps):
+            step_stripped = step.strip()
+            if not step_stripped:
+                continue
+
+            print(f"======== RAW STEP {idx} ========")
+            print(step_stripped)
+            print("================================")
+
+            # 按行切分
+            lines_step = step_stripped.splitlines()
+            # 第一行应该是类似 "# Destination cities #  "
+            header_line = lines_step[0].strip()
+
+            # 去掉行首行尾的 #，取中间的标题文字
+            # "# Destination cities #  " -> "Destination cities"
+            header_clean = header_line.lstrip('#').rstrip('#').strip()
+
+            # 剩下的行作为 body
+            body_lines = lines_step[1:]
+            body = "\n".join(body_lines).strip()
+
+            print(f"---- Parsed header: {header_clean}")
+            print(f"---- Parsed body (first 120 chars): {body[:120]}")
+
+            # 用 header 匹配 step 类型
             prompt = ''
             step_key = ''
             for key in step_to_code_prompts.keys():
-                if key in step.split('# \n')[0]:
+                if key in header_clean:
                     print('!!!!!!!!!!KEY!!!!!!!!!!\n', key, '\n')
                     prompt = step_to_code_prompts[key]
                     step_key = key
+                    break
+
+            if not prompt:
+                raise ValueError(f"Unknown step type. Header: {header_clean}")
+
+            lines = body  # 下面继续沿用原先逻辑
+
             start = time.time()
-            if model == 'gpt': code = GPT_response(prompt + lines, model_version)
-            elif model == 'claude': code = Claude_response(prompt + lines)
-            elif model == 'mixtral': code = Mixtral_response(prompt +'\nRespond with python codes only, do not add \ in front of symbols like _ or *.\n Follow the indentation of provided examples carefully, indent after for-loops!\n' +lines, 'code') # '\nRespond json with python codes only\n' 
-            else: ...
+            if model in ('gpt', 'local', 'deepseek-chat'):
+                code = GPT_response(prompt + lines, llm_model_name)
+            elif model == 'claude':
+                code = Claude_response(prompt + lines)
+            elif model == 'mixtral':
+                code = Mixtral_response(
+                    prompt + '\nRespond with python codes only, do not add \\ in front of symbols like _ or *.\n'
+                    'Follow the indentation of provided examples carefully, indent after for-loops!\n'
+                    + lines,
+                    'code'
+                )
+            else:
+                ...
+
             step_code = time.time()
             times.append(step_code - start)
             code = code.replace('```python', '')
             code = code.replace('```', '')
             code = code.replace('\_', '_')
-            if step_key != 'Destination cities': 
+            if step_key != 'Destination cities':
                 if query_json['days'] == 3:
                     code = code.replace('\n', '\n    ')
                 elif query_json['days'] == 5:
@@ -304,6 +400,8 @@ def pipeline(query, mode, model, index, model_version = None):
             f.close()
         with open('prompts/solve_{}.txt'.format(query_json['days']), 'r') as f:
             codes += f.read()
+        with open(path+'codes/' + 'codes.txt', 'w') as f:
+            f.write(codes)
         start = time.time()
         exec(codes)
         exec_code = time.time()
@@ -350,24 +448,39 @@ if __name__ == '__main__':
     tools_list = ["flights","attractions","accommodations","restaurants","googleDistanceMatrix","cities"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--set_type", type=str, default="validation")
-    parser.add_argument("--model_name", type=str, default="gpt") #'gpt', 'claude', 'mixtral'
+    parser.add_argument("--model_name", type=str, default="gpt") #'gpt', 'claude', 'mixtral', 'local'
     args = parser.parse_args()
 
     if args.set_type == 'validation':
         print('validation')
-        query_data_list  = load_dataset('TravelPlanner','validation')['validation']
+        query_data_list = load_dataset('osunlp/TravelPlanner', 'validation')['validation']
     elif args.set_type == 'test':
         print('test')
-        query_data_list  = load_dataset('TravelPlanner','test')['test']
+        query_data_list = load_dataset('osunlp/TravelPlanner', 'test')['test']
+    elif args.set_type in ('database_small', 'local_small'):
+        print('database_small')
+        query_data_list = load_local_query_dataset('database_small/queries/query.csv')
     else:
-        query_data_list  = load_dataset('TravelPlanner','train')['train']
+        query_data_list = load_dataset('osunlp/TravelPlanner', 'train')['train']
 
-    numbers = [i for i in range(1,len(query_data_list)+1)]
-    with get_openai_callback() as cb:
-        
-        for number in tqdm(numbers[:]):
-            path =  f'output/{args.set_type}/{args.model_name}/{number}/plans/'
+    numbers = [i for i in range(1, len(query_data_list) + 1)]
+    default_model_version = (
+    'gpt-4o'
+    if args.model_name == 'gpt' else
+    'local'
+    if args.model_name == 'local' else
+    'deepseek-chat'
+    if args.model_name == 'deepseek-chat' else
+    'claude-3-opus-20240229'
+    if args.model_name == 'claude' else
+    None
+    )
+    callback_ctx = get_openai_callback() if args.model_name == 'gpt' else nullcontext()
+    with callback_ctx as cb:
+        for number in tqdm(numbers[0:11]):
+            path = f'output/{args.set_type}/{args.model_name}/{number}/plans/'
             if not os.path.exists(path + 'plan.txt'):
                 print(number)
-                query = query_data_list[number-1]['query']
-                result_plan = pipeline(query, args.set_type, args.model_name, number, "gpt-4o") #'gpt', 'claude', 'mixtral'
+                query_entry = query_data_list[number - 1]
+                query = query_entry['query']
+                pipeline(query, args.set_type, args.model_name, number, default_model_version)

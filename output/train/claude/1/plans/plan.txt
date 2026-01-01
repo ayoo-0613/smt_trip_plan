@@ -1,0 +1,6 @@
+Destination cities: ['Rockford'],
+Transportation dates: ['2022-03-16', '2022-03-18'],
+Transportation methods between cities: ['Flight Number: F3573659, from St. Petersburg to Rockford, Departure Time: 15:40, Arrival Time: 17:04', 'Flight Number: F3573120, from Rockford to St. Petersburg, Departure Time: 19:00, Arrival Time: 22:43'],
+Restaurants (3 meals per day): ['-', '-', "Faaso's, Rockford", 'U Like, Rockford', "Dunkin' Donuts, Rockford", 'The Gourmet Shack, Rockford', 'Mirchievous, Rockford', 'New Bhappe Di Hatti, Rockford', 'Chaophraya, Rockford'],
+Attractions (1 per day): ['Discovery Center Museum, Rockford', 'Midway Village Museum, Rockford', 'Burpee Museum of Natural History, Rockford'],
+Accommodations (1 per city): ['Private Room in a two bedroom apt., Rockford']
