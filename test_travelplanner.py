@@ -477,7 +477,7 @@ if __name__ == '__main__':
     )
     callback_ctx = get_openai_callback() if args.model_name == 'gpt' else nullcontext()
     with callback_ctx as cb:
-        for number in tqdm(numbers[0:11]):
+        for number in tqdm(numbers[0:180]):
             path = f'output/{args.set_type}/{args.model_name}/{number}/plans/'
             if not os.path.exists(path + 'plan.txt'):
                 print(number)
