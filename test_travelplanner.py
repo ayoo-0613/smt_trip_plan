@@ -46,6 +46,14 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 # GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
 actionMapping = {"FlightSearch":"flights","AttractionSearch":"attractions","GoogleDistanceMatrix":"googleDistanceMatrix","accommodationSearch":"accommodation","RestaurantSearch":"restaurants","CitySearch":"cities"}
+MODEL_TYPES = {"gpt", "local", "deepseek-chat", "claude", "mixtral"}
+OLLAMA_MODEL_ALIASES = {
+    "deepseek-r1": "deepseek-r1:14b",
+}
+
+def _safe_model_dir(model_name: str) -> str:
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", model_name)
+    return safe_name or "model"
 
 
 def _safe_literal_eval(value):
@@ -224,9 +232,13 @@ def generate_as_plan(s, variables, query):
     print(accommodation_city_list)
     return f'Destination cities: {cities},\nTransportation dates: {departure_dates},\nTransportation methods between cities: {transportation_info},\nRestaurants (3 meals per day): {restaurant_city_list},\nAttractions (1 per day): {attraction_city_list},\nAccommodations (1 per city): {accommodation_city_list}'
 
-def pipeline(query, mode, model, index, model_version = None):
+def pipeline(query, mode, model, index, model_version = None, model_dir = None):
     # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
-    path = f'output/{mode}/{model}/{index}/'
+    model_dir = model_dir or model
+    model_type = model if model in MODEL_TYPES else "local"
+    if model_type == "local" and model_version is None:
+        model_version = model
+    path = f'output/{mode}/{model_dir}/{index}/'
     if not os.path.exists(path):
         os.makedirs(path)
         os.makedirs(path + 'codes/')
@@ -281,15 +293,15 @@ def pipeline(query, mode, model, index, model_version = None):
     plan_json = ''
     codes = ''
     success = False
-    if model == 'local':
+    if model_type == 'local':
         llm_model_name = model_version or 'local'
-    elif model == 'gpt':
+    elif model_type == 'gpt':
         llm_model_name = model_version or 'gpt-4o'
-    elif model == 'deepseek-chat':
+    elif model_type == 'deepseek-chat':
         llm_model_name = model_version or 'deepseek-chat'
-    elif model == 'claude':
+    elif model_type == 'claude':
         llm_model_name = model_version or 'claude-3-opus-20240229'
-    elif model == 'mixtral':
+    elif model_type == 'mixtral':
         llm_model_name = model_version or 'mistral-large-latest'
     else:
         raise ValueError(f"Unknown model type: {model}")
@@ -297,11 +309,11 @@ def pipeline(query, mode, model, index, model_version = None):
     
     try:
         # json generated for postprocess only, not used in inputs to LLMs
-        if model in ('gpt', 'local', 'deepseek-chat'):
+        if model_type in ('gpt', 'local', 'deepseek-chat'):
             query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
                             .replace('```json', '').replace('```', ''))
-        elif model == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
-        elif model == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
+        elif model_type == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
+        elif model_type == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
         else: ...
         
         with open(path+'plans/' + 'query.txt', 'w') as f:
@@ -314,9 +326,9 @@ def pipeline(query, mode, model, index, model_version = None):
 
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
-        if model in ('gpt', 'local', 'deepseek-chat'): steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
-        elif model == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
-        elif model == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        if model_type in ('gpt', 'local', 'deepseek-chat'): steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
+        elif model_type == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+        elif model_type == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
         json_step = time.time()
         times.append(json_step - start)
@@ -367,11 +379,11 @@ def pipeline(query, mode, model, index, model_version = None):
             lines = body  # 下面继续沿用原先逻辑
 
             start = time.time()
-            if model in ('gpt', 'local', 'deepseek-chat'):
+            if model_type in ('gpt', 'local', 'deepseek-chat'):
                 code = GPT_response(prompt + lines, llm_model_name)
-            elif model == 'claude':
+            elif model_type == 'claude':
                 code = Claude_response(prompt + lines)
-            elif model == 'mixtral':
+            elif model_type == 'mixtral':
                 code = Mixtral_response(
                     prompt + '\nRespond with python codes only, do not add \\ in front of symbols like _ or *.\n'
                     'Follow the indentation of provided examples carefully, indent after for-loops!\n'
@@ -448,7 +460,7 @@ if __name__ == '__main__':
     tools_list = ["flights","attractions","accommodations","restaurants","googleDistanceMatrix","cities"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--set_type", type=str, default="validation")
-    parser.add_argument("--model_name", type=str, default="gpt") #'gpt', 'claude', 'mixtral', 'local'
+    parser.add_argument("--model_name", type=str, default="gpt") #'gpt', 'claude', 'mixtral', 'local', or an Ollama model name
     args = parser.parse_args()
 
     if args.set_type == 'validation':
@@ -464,6 +476,7 @@ if __name__ == '__main__':
         query_data_list = load_dataset('osunlp/TravelPlanner', 'train')['train']
 
     numbers = [i for i in range(1, len(query_data_list) + 1)]
+    resolved_model_name = OLLAMA_MODEL_ALIASES.get(args.model_name, args.model_name)
     default_model_version = (
     'gpt-4o'
     if args.model_name == 'gpt' else
@@ -477,10 +490,11 @@ if __name__ == '__main__':
     )
     callback_ctx = get_openai_callback() if args.model_name == 'gpt' else nullcontext()
     with callback_ctx as cb:
-        for number in tqdm(numbers[0:180]):
-            path = f'output/{args.set_type}/{args.model_name}/{number}/plans/'
+        model_dir = _safe_model_dir(resolved_model_name)
+        for number in tqdm(numbers[0:1]):
+            path = f'output/{args.set_type}/{model_dir}/{number}/plans/'
             if not os.path.exists(path + 'plan.txt'):
                 print(number)
                 query_entry = query_data_list[number - 1]
                 query = query_entry['query']
-                pipeline(query, args.set_type, args.model_name, number, default_model_version)
+                pipeline(query, args.set_type, resolved_model_name, number, default_model_version, model_dir)
