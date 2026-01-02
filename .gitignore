@@ -1,7 +1,7 @@
-openai_func.py
 # Ignore Python cache
 __pycache__/
 *.pyc
+openai_func.py
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
