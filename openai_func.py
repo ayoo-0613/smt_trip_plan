@@ -9,6 +9,22 @@ import time
 import anthropic
 import openai
 
+def _trim_text(text, limit=500):
+  text = text or ""
+  if len(text) <= limit:
+    return text
+  return text[:limit] + "...(truncated)"
+
+def _ollama_debug_log(section, content):
+  log_path = os.environ.get("OLLAMA_DEBUG_LOG")
+  if not log_path:
+    return
+  try:
+    with open(log_path, "a") as f:
+      f.write(f"[{section}]\n{content}\n\n")
+  except Exception:
+    pass
+
 def _normalize_messages(messages):
   if isinstance(messages, list):
     return messages
@@ -33,9 +49,15 @@ def _ollama_chat_response(messages, model_name, timeout=999):
     "temperature": 0.0,
     "stream": False,
   }
+  _ollama_debug_log("ollama_chat_request", f"url={url}\nmodel={model_name}\n")
   resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
-  resp.raise_for_status()
-  data = resp.json()
+  if not resp.ok:
+    raise RuntimeError(f"Ollama chat error {resp.status_code}: {_trim_text(resp.text)}")
+  try:
+    data = resp.json()
+  except Exception:
+    raise RuntimeError(f"Ollama chat non-JSON response: {_trim_text(resp.text)}")
+  _ollama_debug_log("ollama_chat_response", _trim_text(resp.text))
   return data["choices"][0]["message"]["content"]
 
 def _ollama_generate_response(prompt, model_name, timeout=999):
@@ -46,9 +68,15 @@ def _ollama_generate_response(prompt, model_name, timeout=999):
     "prompt": prompt,
     "stream": False
   }
+  _ollama_debug_log("ollama_generate_request", f"url={url}\nmodel={model_name}\n")
   resp = requests.post(url, json=payload, timeout=timeout)
-  resp.raise_for_status()
-  data = resp.json()
+  if not resp.ok:
+    raise RuntimeError(f"Ollama generate error {resp.status_code}: {_trim_text(resp.text)}")
+  try:
+    data = resp.json()
+  except Exception:
+    raise RuntimeError(f"Ollama generate non-JSON response: {_trim_text(resp.text)}")
+  _ollama_debug_log("ollama_generate_response", _trim_text(resp.text))
   return data.get("response", "")
 
 def Local_response(prompt, model_name="llama2"):
@@ -58,13 +86,15 @@ def Local_response(prompt, model_name="llama2"):
     prompt_text = "\n".join([item.get("content", "") for item in prompt])
   else:
     prompt_text = prompt
+  chat_error = None
   try:
     return _ollama_chat_response(messages, model_name)
-  except Exception:
+  except Exception as e:
+    chat_error = e
     try:
       return _ollama_generate_response(prompt_text, model_name)
     except Exception as e:
-      return f"[Local LLM Error] {e}"
+      return f"[Local LLM Error] chat={chat_error}; generate={e}"
 
 
 claude_api_key_name = ...# your key
