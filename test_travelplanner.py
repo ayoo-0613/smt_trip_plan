@@ -100,6 +100,21 @@ def _safe_model_dir(model_name: str) -> str:
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", model_name)
     return safe_name or "model"
 
+def _strip_think_blocks(text: str) -> str:
+    if not text:
+        return ""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+
+def _filter_step_blocks(steps_text: str) -> list:
+    blocks = []
+    for block in steps_text.split("\n\n"):
+        lines = [ln for ln in block.splitlines() if ln.strip()]
+        if not lines:
+            continue
+        if lines[0].lstrip().startswith("#"):
+            blocks.append("\n".join(lines))
+    return blocks
+
 
 def _safe_literal_eval(value):
     if pd.isna(value):
@@ -399,8 +414,11 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
             f.write(steps)
         f.close()
 
-        steps = steps.split('\n\n')
-        for idx, step in enumerate(steps):
+        steps_processed = _strip_think_blocks(steps)
+        step_blocks = _filter_step_blocks(steps_processed)
+        if not step_blocks:
+            raise ValueError("No valid step blocks found in LLM response")
+        for idx, step in enumerate(step_blocks):
             step_stripped = step.strip()
             if not step_stripped:
                 continue
