@@ -17,9 +17,6 @@ build/
 # Mac system files
 .DS_Store
 
-# Output and logs
-output/
-logs/
 
 # Environment files
 .env
@@ -30,27 +27,7 @@ database/
 
 database_small/
 
-# Ignore model weights or large files
-*.ckpt
-*.pth
-*.pt
-*.h5
-*.onnx
-*.bin
-*.tflite
-*.pb
 
-# Ignore csv and data dumps
-*.csv
-*.tsv
-*.xls
-*.xlsx
-*.parquet
-*.feather
-*.arrow
-*.db
-*.sqlite
-*.log
 
 # Ignore images and results
 imgs/
@@ -60,20 +37,3 @@ imgs/
 *.gif
 *.svg
 
-# Ignore notebook outputs
-*.out
-*.ipynb
-
-# Ignore test artifacts
-*.tmp
-*.bak
-*.swp
-*.swo
-
-# Ignore API keys and secrets
-secrets.*
-*.key
-*.pem
-*.crt
-*.p12
-*.pfx

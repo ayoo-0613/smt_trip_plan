@@ -51,6 +51,45 @@ OLLAMA_MODEL_ALIASES = {
     "deepseek-r1": "deepseek-r1:14b",
 }
 
+def _extract_json_block(text: str) -> str:
+    if not text:
+        return ""
+    starts = [idx for idx in (text.find("{"), text.find("[")) if idx != -1]
+    if not starts:
+        return ""
+    start = min(starts)
+    open_ch = text[start]
+    close_ch = "}" if open_ch == "{" else "]"
+    depth = 0
+    for i in range(start, len(text)):
+        ch = text[i]
+        if ch == open_ch:
+            depth += 1
+        elif ch == close_ch:
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+    return ""
+
+def _parse_json_response(raw_text: str) -> dict:
+    cleaned = (raw_text or "").strip()
+    if not cleaned:
+        raise ValueError("Empty LLM response")
+    candidates = [cleaned]
+    no_fence = re.sub(r"^```(?:json)?", "", cleaned).strip()
+    no_fence = re.sub(r"```$", "", no_fence).strip()
+    candidates.append(no_fence)
+    extracted = _extract_json_block(cleaned)
+    if extracted:
+        candidates.append(extracted)
+    for candidate in candidates:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+    preview = cleaned.replace("\n", " ")[:200]
+    raise ValueError(f"Invalid JSON from LLM: {preview}")
+
 def _safe_model_dir(model_name: str) -> str:
     safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", model_name)
     return safe_name or "model"
@@ -310,8 +349,25 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
     try:
         # json generated for postprocess only, not used in inputs to LLMs
         if model_type in ('gpt', 'local', 'deepseek-chat'):
-            query_json = json.loads(GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
-                            .replace('```json', '').replace('```', ''))
+            raw_query_json = GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
+            with open(path+'plans/' + 'query_raw.txt', 'w') as f:
+                f.write(raw_query_json or '')
+            f.close()
+            try:
+                query_json = _parse_json_response(raw_query_json)
+            except Exception:
+                if model_type == 'local' and 'qwen' in llm_model_name.lower():
+                    retry_prompt = (
+                        query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n'
+                        + '\nReturn ONLY a valid JSON object. No markdown, no explanation.'
+                    )
+                    raw_retry = GPT_response(retry_prompt, llm_model_name)
+                    with open(path+'plans/' + 'query_raw_retry.txt', 'w') as f:
+                        f.write(raw_retry or '')
+                    f.close()
+                    query_json = _parse_json_response(raw_retry)
+                else:
+                    raise
         elif model_type == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
         elif model_type == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
         else: ...
