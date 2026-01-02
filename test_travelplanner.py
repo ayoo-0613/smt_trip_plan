@@ -8,15 +8,6 @@ import ast
 from typing import List, Dict, Any
 import tiktoken
 from pandas import DataFrame
-from langchain.chat_models import ChatOpenAI
-from langchain.callbacks import get_openai_callback
-from langchain.llms.base import BaseLLM
-from langchain.prompts import PromptTemplate
-from langchain.schema import (
-    AIMessage,
-    HumanMessage,
-    SystemMessage
-)
 from utils.func import load_line_json_data, save_file
 import sys
 import json
@@ -51,42 +42,57 @@ OLLAMA_MODEL_ALIASES = {
     "deepseek-r1": "deepseek-r1:14b",
 }
 
-def _extract_json_block(text: str) -> str:
+def _extract_json_blocks(text: str) -> list:
     if not text:
-        return ""
-    starts = [idx for idx in (text.find("{"), text.find("[")) if idx != -1]
-    if not starts:
-        return ""
-    start = min(starts)
-    open_ch = text[start]
-    close_ch = "}" if open_ch == "{" else "]"
-    depth = 0
-    for i in range(start, len(text)):
+        return []
+    blocks = []
+    i = 0
+    while i < len(text):
         ch = text[i]
-        if ch == open_ch:
-            depth += 1
-        elif ch == close_ch:
-            depth -= 1
-            if depth == 0:
-                return text[start:i + 1]
-    return ""
+        if ch not in ("{", "["):
+            i += 1
+            continue
+        open_ch = ch
+        close_ch = "}" if open_ch == "{" else "]"
+        depth = 0
+        for j in range(i, len(text)):
+            cj = text[j]
+            if cj == open_ch:
+                depth += 1
+            elif cj == close_ch:
+                depth -= 1
+                if depth == 0:
+                    blocks.append(text[i:j + 1])
+                    i = j + 1
+                    break
+        else:
+            i += 1
+    return blocks
 
 def _parse_json_response(raw_text: str) -> dict:
     cleaned = (raw_text or "").strip()
     if not cleaned:
         raise ValueError("Empty LLM response")
-    candidates = [cleaned]
+    candidates = []
     no_fence = re.sub(r"^```(?:json)?", "", cleaned).strip()
     no_fence = re.sub(r"```$", "", no_fence).strip()
-    candidates.append(no_fence)
-    extracted = _extract_json_block(cleaned)
-    if extracted:
-        candidates.append(extracted)
+    candidates.extend([cleaned, no_fence])
+    candidates.extend(_extract_json_blocks(cleaned))
+    parsed_items = []
     for candidate in candidates:
         try:
-            return json.loads(candidate)
+            parsed_items.append(json.loads(candidate))
         except json.JSONDecodeError:
             continue
+    required_keys = {"org", "dest", "date", "days"}
+    for item in parsed_items:
+        if isinstance(item, dict) and required_keys.issubset(item.keys()):
+            return item
+    for item in parsed_items:
+        if isinstance(item, dict):
+            return item
+    if parsed_items:
+        return parsed_items[0]
     preview = cleaned.replace("\n", " ")[:200]
     raise ValueError(f"Invalid JSON from LLM: {preview}")
 
