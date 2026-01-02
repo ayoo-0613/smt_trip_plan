@@ -105,6 +105,30 @@ def _strip_think_blocks(text: str) -> str:
         return ""
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
 
+def _clean_code_response(text: str) -> str:
+    if not text:
+        return ""
+    cleaned = _strip_think_blocks(text)
+    fence_match = re.search(r"```(?:python)?\s*(.*?)```", cleaned, flags=re.DOTALL | re.IGNORECASE)
+    if fence_match:
+        cleaned = fence_match.group(1)
+    lines = cleaned.splitlines()
+    start_idx = None
+    for i, line in enumerate(lines):
+        if re.match(r"^#+.*?response#+\s*$", line.strip(), flags=re.IGNORECASE):
+            start_idx = i + 1
+            break
+    if start_idx is not None:
+        for j in range(start_idx, len(lines)):
+            if re.match(r"^#+.*?response ends#+\s*$", lines[j].strip(), flags=re.IGNORECASE):
+                return "\n".join(lines[start_idx:j]).strip()
+    cleaned_lines = []
+    for line in lines:
+        if line.strip().startswith("```"):
+            continue
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines).strip()
+
 def _filter_step_blocks(steps_text: str) -> list:
     blocks = []
     for block in steps_text.split("\n\n"):
@@ -475,9 +499,7 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
 
             step_code = time.time()
             times.append(step_code - start)
-            code = code.replace('```python', '')
-            code = code.replace('```', '')
-            code = code.replace('\_', '_')
+            code = _clean_code_response(code).replace('\_', '_')
             if step_key != 'Destination cities':
                 if query_json['days'] == 3:
                     code = code.replace('\n', '\n    ')
@@ -571,7 +593,7 @@ if __name__ == '__main__':
     callback_ctx = get_openai_callback() if args.model_name == 'gpt' else nullcontext()
     with callback_ctx as cb:
         model_dir = _safe_model_dir(resolved_model_name)
-        for number in tqdm(numbers[0:1]):
+        for number in tqdm(numbers[:]):
             path = f'output/{args.set_type}/{model_dir}/{number}/plans/'
             if not os.path.exists(path + 'plan.txt'):
                 print(number)
