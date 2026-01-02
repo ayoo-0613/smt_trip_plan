@@ -1,3 +1,4 @@
+openai_func.py
 # Ignore Python cache
 __pycache__/
 *.pyc
