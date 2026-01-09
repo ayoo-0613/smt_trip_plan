@@ -37,7 +37,8 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 # GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
 actionMapping = {"FlightSearch":"flights","AttractionSearch":"attractions","GoogleDistanceMatrix":"googleDistanceMatrix","accommodationSearch":"accommodation","RestaurantSearch":"restaurants","CitySearch":"cities"}
-MODEL_TYPES = {"gpt", "local", "deepseek-chat", "claude", "mixtral"}
+MODEL_TYPES = {"gpt", "local", "claude", "mixtral"}
+REMOTE_MODEL_TYPES = {"gpt", "claude", "mixtral"}
 OLLAMA_MODEL_ALIASES = {
     "deepseek-r1": "deepseek-r1:14b",
 }
@@ -316,10 +317,16 @@ def generate_as_plan(s, variables, query):
     print(accommodation_city_list)
     return f'Destination cities: {cities},\nTransportation dates: {departure_dates},\nTransportation methods between cities: {transportation_info},\nRestaurants (3 meals per day): {restaurant_city_list},\nAttractions (1 per day): {attraction_city_list},\nAccommodations (1 per city): {accommodation_city_list}'
 
-def pipeline(query, mode, model, index, model_version = None, model_dir = None):
+def pipeline(query, mode, model, index, model_version = None, model_dir = None, *, allow_remote: bool = False):
     # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
     model_dir = model_dir or model
     model_type = model if model in MODEL_TYPES else "local"
+    if model_type in REMOTE_MODEL_TYPES and not allow_remote:
+        raise ValueError(
+            f"Remote LLM '{model_type}' is disabled (local-only mode). "
+            f"Use a local Ollama model name (e.g. 'local', 'ollama:llama3', 'qwen2.5:7b') "
+            f"or pass --allow_remote."
+        )
     if model_type == "local" and model_version is None:
         model_version = model
     path = f'output/{mode}/{model_dir}/{index}/'
@@ -381,8 +388,6 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
         llm_model_name = model_version or 'local'
     elif model_type == 'gpt':
         llm_model_name = model_version or 'gpt-4o'
-    elif model_type == 'deepseek-chat':
-        llm_model_name = model_version or 'deepseek-chat'
     elif model_type == 'claude':
         llm_model_name = model_version or 'claude-3-opus-20240229'
     elif model_type == 'mixtral':
@@ -393,8 +398,23 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
     
     try:
         # json generated for postprocess only, not used in inputs to LLMs
-        if model_type in ('gpt', 'local', 'deepseek-chat'):
+        if model_type == 'local':
+            raw_query_json = Local_response(
+                query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n',
+                model_name=llm_model_name,
+            )
+        elif model_type == 'gpt':
             raw_query_json = GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
+        elif model_type == 'claude':
+            raw_query_json = Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n')
+            query_json = json.loads(raw_query_json.replace('```json', '').replace('```', ''))
+        elif model_type == 'mixtral':
+            raw_query_json = Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json')
+            query_json = json.loads(raw_query_json.replace('```json', '').replace('```', ''))
+        else:
+            ...
+
+        if model_type in ('local', 'gpt'):
             with open(path+'plans/' + 'query_raw.txt', 'w') as f:
                 f.write(raw_query_json or '')
             f.close()
@@ -406,16 +426,13 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
                         query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n'
                         + '\nReturn ONLY a valid JSON object. No markdown, no explanation.'
                     )
-                    raw_retry = GPT_response(retry_prompt, llm_model_name)
+                    raw_retry = Local_response(retry_prompt, model_name=llm_model_name)
                     with open(path+'plans/' + 'query_raw_retry.txt', 'w') as f:
                         f.write(raw_retry or '')
                     f.close()
                     query_json = _parse_json_response(raw_retry)
                 else:
                     raise
-        elif model_type == 'claude': query_json = json.loads(Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n').replace('```json', '').replace('```', ''))
-        elif model_type == 'mixtral': query_json = json.loads(Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json').replace('```json', '').replace('```', '')) 
-        else: ...
         
         with open(path+'plans/' + 'query.txt', 'w') as f:
             f.write(query)
@@ -427,7 +444,13 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
 
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
-        if model_type in ('gpt', 'local', 'deepseek-chat'): steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
+        if model_type == 'local':
+            steps = Local_response(
+                constraint_to_step_prompt + query + '\n' + 'Steps:\n',
+                model_name=llm_model_name,
+            )
+        elif model_type == 'gpt':
+            steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
         elif model_type == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         elif model_type == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
@@ -483,7 +506,9 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None):
             lines = body  # 下面继续沿用原先逻辑
 
             start = time.time()
-            if model_type in ('gpt', 'local', 'deepseek-chat'):
+            if model_type == 'local':
+                code = Local_response(prompt + lines, model_name=llm_model_name)
+            elif model_type == 'gpt':
                 code = GPT_response(prompt + lines, llm_model_name)
             elif model_type == 'claude':
                 code = Claude_response(prompt + lines)
@@ -562,7 +587,17 @@ if __name__ == '__main__':
     tools_list = ["flights","attractions","accommodations","restaurants","googleDistanceMatrix","cities"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--set_type", type=str, default="validation")
-    parser.add_argument("--model_name", type=str, default="gpt") #'gpt', 'claude', 'mixtral', 'local', or an Ollama model name
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="local",
+        help="Local LLM model name: 'local' uses $OLLAMA_MODEL; or use 'ollama:<name>' / '<name>' for Ollama.",
+    )
+    parser.add_argument(
+        "--allow_remote",
+        action="store_true",
+        help="Allow remote providers like 'gpt'/'claude'/'mixtral' (default: local-only).",
+    )
     args = parser.parse_args()
 
     if args.set_type == 'validation':
@@ -584,19 +619,23 @@ if __name__ == '__main__':
     if args.model_name == 'gpt' else
     'local'
     if args.model_name == 'local' else
-    'deepseek-chat'
-    if args.model_name == 'deepseek-chat' else
     'claude-3-opus-20240229'
     if args.model_name == 'claude' else
     None
     )
-    callback_ctx = get_openai_callback() if args.model_name == 'gpt' else nullcontext()
-    with callback_ctx as cb:
-        model_dir = _safe_model_dir(resolved_model_name)
-        for number in tqdm(numbers[:]):
-            path = f'output/{args.set_type}/{model_dir}/{number}/plans/'
-            if not os.path.exists(path + 'plan.txt'):
-                print(number)
-                query_entry = query_data_list[number - 1]
-                query = query_entry['query']
-                pipeline(query, args.set_type, resolved_model_name, number, default_model_version, model_dir)
+    model_dir = _safe_model_dir(resolved_model_name)
+    for number in tqdm(numbers[:]):
+        path = f'output/{args.set_type}/{model_dir}/{number}/plans/'
+        if not os.path.exists(path + 'plan.txt'):
+            print(number)
+            query_entry = query_data_list[number - 1]
+            query = query_entry['query']
+            pipeline(
+                query,
+                args.set_type,
+                resolved_model_name,
+                number,
+                default_model_version,
+                model_dir,
+                allow_remote=args.allow_remote,
+            )

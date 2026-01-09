@@ -20,7 +20,7 @@ Codes and Dataset for the Paper "[Large Language Models Can Solve Real-World Pla
 
 ## Running
 #### Satisfiable Plan Solving 
-The file for satisfiable plan generation experiment is `test_travelplanner.py`. An example command is ```python test_travelplanner.py  --set_type train --model_name gpt```
+The file for satisfiable plan generation experiment is `test_travelplanner.py`. An example (local-only) command is ```python test_travelplanner.py --set_type train --model_name local``` (uses `$OLLAMA_MODEL`) or ```python test_travelplanner.py --set_type train --model_name ollama:llama3``` to specify an Ollama model.
 *Note: You might want to use the training set to adjust the prompts for different LLMs. You can add customized checker for steps and codes to further improve the performance.*
 
 #### Unsatisfiable Plan Repair 

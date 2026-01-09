@@ -6,8 +6,7 @@ import ast
 import re
 import math
 import time
-import anthropic
-import openai
+from typing import Any, Dict, List, Optional, Union
 
 def _trim_text(text, limit=500):
   text = text or ""
@@ -100,24 +99,37 @@ def Local_response(prompt, model_name="llama2"):
 claude_api_key_name = ...# your key
 mixtral_api_key_name = ...# your key
 
-def GPT_response(messages, model_name):
-  if model_name in ['gpt-4-turbo-preview','gpt-4-1106-preview', 'gpt-4', 'gpt-4o', 'gpt-4-32k', 'gpt-3.5-turbo-0301', 'gpt-4-0613', 'gpt-4-32k-0613', 'gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo']:
-    #print(f'-------------------Model name: {model_name}-------------------')
-    response = openai.ChatCompletion.create(
+_OPENAI_CHAT_MODELS = {
+  'gpt-4-turbo-preview',
+  'gpt-4-1106-preview',
+  'gpt-4',
+  'gpt-4o',
+  'gpt-4-32k',
+  'gpt-3.5-turbo-0301',
+  'gpt-4-0613',
+  'gpt-4-32k-0613',
+  'gpt-3.5-turbo-16k-0613',
+  'gpt-3.5-turbo',
+}
+
+def GPT_response(messages: Union[str, List[Dict[str, Any]]], model_name: str):
+  if model_name in _OPENAI_CHAT_MODELS:
+    from openai import OpenAI
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    normalized = _normalize_messages(messages)
+    response = client.chat.completions.create(
       model=model_name,
-      messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": messages}
-        ],
-      temperature = 0.0,
+      messages=[{"role": "system", "content": "You are a helpful assistant."}] + normalized,
+      temperature=0.0,
       top_p=1,
       frequency_penalty=0,
-      presence_penalty=0
+      presence_penalty=0,
     )
     return response.choices[0].message.content
   return Local_response(messages, model_name=model_name)
 
 def Claude_response(messages):
+  import anthropic
   client = anthropic.Anthropic(
     api_key=claude_api_key_name,
   )
