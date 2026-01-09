@@ -1,0 +1,1 @@
+{"org": "Los Angeles", "dest": "Detroit", "days": 3, "visiting_city_number": 1, "date": ["2022-03-18", "2022-03-19", "2022-03-20"], "people_number": 2, "local_constraint": {"house rule": "visitors", "cuisine": ["Chinese", "Indian", "Mexican", "Italian"], "room type": null, "transportation": "no self-driving"}, "budget": 2000}

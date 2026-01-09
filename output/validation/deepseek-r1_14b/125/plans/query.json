@@ -1,0 +1,1 @@
+{"org": "New York", "dest": "Charleston", "days": 3, "visiting_city_number": 1, "date": ["2022-03-19", "2022-03-20", "2022-03-21"], "people_number": 2, "local_constraint": {"house rule": "smoking", "cuisine": ["French", "Mediterranean", "Mexican", "Chinese"], "room type": "not shared room", "transportation": null}, "budget": 1600}

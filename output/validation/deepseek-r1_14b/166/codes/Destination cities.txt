@@ -1,0 +1,8 @@
+# Set cities to be a list includes 3 Idaho cities (e.g., Boise, Twin Falls, Coeur d'Alene)  
+cities = ['Boise', 'Twin Falls', 'Coeur d\'Alene']
+# Loop through cities for 3 destination cities
+for city_combination in itertools.combinations(cities, 3):
+    # Initialize Z3 solver s
+    s = Optimize()
+    # Set 'city' variable to be indexes of 3 destination cities
+    variables['city'] = [Int('city_' + str(i)) for i in range(3)]

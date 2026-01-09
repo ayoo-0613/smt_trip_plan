@@ -1,0 +1,13 @@
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(3)]
+    variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(3)]
+    variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(3)]
+    
+    for i in range(3):
+        s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), 'either flight, self-driving, or taxi for transportation ' + str(i))
+        s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), And(variables['flight'][i], variables['taxi'][i]), And(variables['taxi'][i], variables['self-driving'][i]))), 'flight, self-driving, and taxi not simultaneously for transportation ' + str(i))
+    
+    s.assert_and_track(Implies(Or(variables['flight'][0], variables['flight'][1], variables['flight'][2]), Not(Or(variables['self-driving'][0], variables['self-driving'][1], variables['self-driving'][2]))), 'no self-driving if taken flight for any transportation')
+    s.assert_and_track(Implies(Or(variables['taxi'][0], variables['taxi'][1], variables['taxi'][2]), Not(Or(variables['self-driving'][0], variables['self-driving'][1], variables['self-driving'][2]))), 'no self-driving if taken taxi for any transportation')
+    
+    for i in range(3):
+        s.assert_and_track(Not(variables['self-driving'][i]), 'no self-driving for transportation ' + str(i))

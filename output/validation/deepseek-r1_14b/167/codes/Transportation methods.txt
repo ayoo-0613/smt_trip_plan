@@ -1,0 +1,11 @@
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(4)]
+                variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(4)]
+                
+                # Assert only one of flight or taxi is used for each transportation
+                for i in range(4):
+                    s.assert_and_track(Or(variables['flight'][i], variables['taxi'][i]), f'either flight or taxi for transportation {i+1}')
+                    s.assert_and_track(Not(And(variables['flight'][i], variables['taxi'][i])), f'flight and taxi not simultaneously for transportation {i+1}')
+                
+                # Assert all 4 transportations are not self-driving
+                for i in range(4):
+                    s.assert_and_track(Not(variables['self-driving'][i]), f'no self-driving for transportation {i+1}')

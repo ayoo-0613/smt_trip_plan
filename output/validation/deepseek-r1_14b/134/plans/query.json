@@ -1,0 +1,1 @@
+{"org": "Columbus", "dest": "Newark", "days": 3, "visiting_city_number": 1, "date": ["2022-03-25", "2022-03-26", "2022-03-27"], "people_number": 2, "local_constraint": {"house rule": "children under 10", "cuisine": null, "room type": "entire room", "transportation": "no self-driving"}, "budget": 1200}

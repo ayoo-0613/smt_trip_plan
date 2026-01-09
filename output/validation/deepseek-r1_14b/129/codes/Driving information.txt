@@ -1,0 +1,18 @@
+# Run DistanceSearch to get driving info for Atlanta as origin and city_0 and city_1
+    driving_info = DistanceSearch.run_for_all_cities('Atlanta', cities, [city_0, city_1])  # use driving_info, do not customize
+    # Run DistanceSearch to get driving info for St. Petersburg as origin and city_0
+    driving_info = DistanceSearch.run_for_all_cities('St. Petersburg', cities, [city_0])  # use driving_info, do not customize
+    # Get specific driving distance info with Atlanta as origin and final destination, specific city, and departure date for 3 transportations
+    driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Atlanta', variables['city'][0], 'Distance')
+    driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Distance')
+    driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, variables['city'][1],'Atlanta', 'Distance')
+    # Get specific driving distance info with St. Petersburg as origin and final destination, specific city, and departure date for 2 transportations 
+    driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'St. Petersburg', variables['city'][0], 'Distance') # Use driving_0_distance, do not customize
+    driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, variables['city'][0], 'St. Petersburg', 'Distance') # Use driving_1_distance, do not customize
+    # Get driving arrival time with Atlanta as origin and final destination, specific city, and departure date for 3 transportations
+    driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Atlanta', variables['city'][0], 'Duration') # Use driving_0_arrtime, do not customize
+    driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration') # Use driving_1_arrtime, do not customize
+    driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][1], 'Atlanta', 'Duration') # Use driving_2_arrtime, do not customize
+    # Get driving arrival time with St. Petersburg as origin and final destination, specific city, and departure date for 2 transportations 
+    driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'St. Petersburg', variables['city'][0], 'Duration') # Use driving_0_arrtime, do not customize
+    driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'St. Petersburg', 'Duration') # Use driving_1_arrtime, do not customize

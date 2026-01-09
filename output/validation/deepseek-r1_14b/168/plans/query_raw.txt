@@ -1,0 +1,35 @@
+<think>
+Alright, let's tackle this query step by step. The user has provided a text and wants me to extract information into JSON format following specific guidelines. First, I'll read the text carefully.
+
+The trip starts in Fort Lauderdale, so "org" is Fort Lauderdale. The destination is Georgia, but it mentions covering 3 cities there, so "dest" should be Georgia. 
+
+Next, the travel dates are from March 24th to March 30th, 2022. That's 7 days in total. Since days exceed 3, I need to check if "visiting_city_number" is specified. The text says 3 cities, so that's straightforward.
+
+The number of people is 2, so "people_number" is 2. Budget is $8,000, which goes into the JSON as is.
+
+Now for local constraints. They require rooms that are not shared, so under "house type," it should be "not shared room." Also, they have children under 10, so "house rule" includes that. For cuisine, they mentioned Indian, American, Chinese, and Mediterranean, which I'll list all of them.
+
+Transportation isn't specified, so it remains null. The other constraints like parties or pets aren't mentioned, so those are null too.
+
+I need to make sure each field is filled except where the text doesn't mention something. Also, "date" should be an array from March 24th to March 30th, which I'll format as YYYY-MM-DD.
+
+Double-checking everything: org, dest, days, visiting_city_number, date, people_number, local_constraint with all possible options filled where applicable, and budget. Looks good.
+</think>
+
+```json
+{
+    "org": "Fort Lauderdale", 
+    "dest": "Georgia", 
+    "days": 7, 
+    "visiting_city_number": 3, 
+    "date": ["2022-03-24", "2022-03-25", "2022-03-26", "2022-03-27", "2022-03-28", "2022-03-29", "2022-03-30"], 
+    "people_number": 2, 
+    "local_constraint": {
+        "house rule": ["children under 10"], 
+        "cuisine": ["Indian", "American", "Chinese", "Mediterranean"], 
+        "room type": "not shared room", 
+        "transportation": null
+    }, 
+    "budget": 8000
+}
+```

@@ -1,0 +1,2 @@
+s.assert_and_track(Implies(variables['mode1'] == 'flight', variables['cost_flight1'] == flight_0_price), 'cost_flight1 constraint')
+            s.assert_and_track(Implies(variables['mode2'] == 'flight', variables['cost_flight2'] == flight_1_price), 'cost_flight2 constraint')

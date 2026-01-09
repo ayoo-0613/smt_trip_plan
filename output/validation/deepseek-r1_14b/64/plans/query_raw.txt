@@ -1,0 +1,33 @@
+<think>
+Alright, I need to help the user extract information from their text and structure it into JSON as per their examples. Let me start by reading the query carefully.
+
+The user provided a sample text where they want a 3-day trip for 7 people from Salt Lake City to Burbank, from March 12th to 14th, 2022. They mention visiting a solitary city in Burbank and have a budget of $7,600. For accommodations, they prefer entire rooms.
+
+First, I'll identify the key components: org is Salt Lake City, dest is Burbank. Days are 3, so visiting_city_number should be 1 since it's within the destination state. The dates need to be formatted as an array of strings in "YYYY-MM-DD" format.
+
+Next, people_number is clearly 7 from the text. Budget is $7,600, so that goes directly into the JSON.
+
+Looking at local constraints: house rule isn't mentioned, cuisine isn't specified either, transportation isn't discussed, but room type is "entire rooms". So in the local_constraint object, I'll set "room type" to "entire room" and others to null.
+
+I should make sure that all fields are filled except where it's explicitly stated to be null. Also, check if any constraints were missed, like transportation or house rules, but in this case, only room type is specified.
+
+Putting it all together, I'll structure the JSON accordingly, ensuring each field matches the examples provided by the user.
+</think>
+
+```json
+{
+    "org": "Salt Lake City", 
+    "dest": "Burbank", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-12", "2022-03-13", "2022-03-14"], 
+    "people_number": 7, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": "entire room", 
+        "transportation": null
+    }, 
+    "budget": 7600
+}
+```

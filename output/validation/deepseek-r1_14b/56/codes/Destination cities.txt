@@ -1,0 +1,17 @@
+# Use CitySearch to get all possible cities in Florida for March 22nd to March 28th, 2022
+cities = CitySearch.run('Florida', 'Miami', ["2022-03-22", "2022-03-23", "2022-03-24", "2022-03-25", "2022-03-26", "2022-03-27", "2022-03-28"])
+# Set cities to be a list of three different cities in Florida
+cities = ['Miami', 'Orlando', 'Tampa']
+# Loop through cities for 3 destination cities
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            # Initialize Z3 solver s
+            s = Optimize()
+            # Set 'city' variable to be indexes of 3 destination cities
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            # Assert all 'city' variables are distinct
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s.assert_and_track(variables['city'][0] == city_0_index,  'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index,  'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index,  'visit city in cities list')

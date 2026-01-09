@@ -1,0 +1,9 @@
+cities = ['Detroit', 'Ann Arbor']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        s = Optimize()
+        variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+        s.assert_and_track(variables['city'][0] >= 0, 'valid range')
+        s.assert_and_track(variables['city'][0] < len(cities), 'valid range')
+        s.assert_and_track(variables['city'][1] >= 0, 'valid range')
+        s.assert_and_track(variables['city'][1] < len(cities), 'valid range')

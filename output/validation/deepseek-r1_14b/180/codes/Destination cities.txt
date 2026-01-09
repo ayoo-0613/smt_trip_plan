@@ -1,0 +1,12 @@
+cities = ['Austin', 'San Antonio', 'Houston']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            s.assert_and_track(variables['city'][0] >= 0, 'valid city index')
+            s.assert_and_track(variables['city'][0] <= len(cities)-1, 'valid city index')
+            s.assert_and_track(variables['city'][1] >= 0, 'valid city index')
+            s.assert_and_track(variables['city'][1] <= len(cities)-1, 'valid city index')
+            s.assert_and_track(variables['city'][2] >= 0, 'valid city index')
+            s.assert_and_track(variables['city'][2] <= len(cities)-1, 'valid city index')

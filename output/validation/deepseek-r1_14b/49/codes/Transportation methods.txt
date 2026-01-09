@@ -1,0 +1,25 @@
+# Set transportation method variable for each transportation leg  
+                variables['flight'] = [Bool('flight_' + str(i)) for i in range(3)]
+                variables['self-driving'] = [Bool('self-driving_' + str(i)) for i in range(3)]
+                variables['taxi'] = [Bool('taxi_' + str(i)) for i in range(3)]
+                
+                # Use GroundTransportationSearch function to get ground transportation options  
+                def GroundTransportationSearch(budget):
+                    # Implementation of GroundTransportationSearch function
+                    pass
+                
+                ground_options = GroundTransportationSearch(budget)
+                
+                # Assert all transportation methods are valid and within budget
+                for i in range(3):
+                    s.assert_and_track(variables['flight'][i], 'flight option for leg {}'.format(i+1))
+                    s.assert_and_track(variables['self-driving'][i], 'self-driving option for leg {}'.format(i+1))
+                    s.assert_and_track(variables['taxi'][i], 'taxi option for leg {}'.format(i+1))
+                
+                    # Assert transportation method is within budget
+                    s.assert_and_track(And(ground_options[i][0], variables['flight'][i]), 
+                                      'flight cost within budget for leg {}'.format(i+1))
+                    s.assert_and_track(And(ground_options[i][1], variables['self-driving'][i]), 
+                                      'self-driving cost within budget for leg {}'.format(i+1))
+                    s.assert_and_track(And(ground_options[i][2], variables['taxi'][i]), 
+                                      'taxi cost within budget for leg {}'.format(i+1))

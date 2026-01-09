@@ -1,8 +1,7 @@
-########## Driving response##########
-    # Run DistanceSearch to get driving info for Washington as origin and city_0
+# Run DistanceSearch to get driving info for Washington as origin and city_0
     driving_info = DistanceSearch.run_for_all_cities('Washington', cities, [city_0])  # use driving_info, do not customize
     
-    # Get specific driving distance info with Washington as origin and final destination, specific city, and departure date for 2 transportations
+    # Get specific driving distance info with Washington as origin and final destination, specific city, and departure date for 2 transportations 
     driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Washington', variables['city'][0], 'Distance')
     driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, variables['city'][0], 'Washington', 'Distance')
     
@@ -16,7 +15,6 @@
     taxi_0_price = driving_0_distance * math.ceil(1 / 4)
     taxi_1_price = driving_1_distance * math.ceil(1 / 4)
     
-    # Get driving arrival time with Washington as origin and final destination, specific city, and departure date for 2 transportations
-    driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Washington', variables['city'][0], 'Duration')  # Use driving_0_arrtime, do not customize
-    driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'Washington', 'Duration')  # Use driving_1_arrtime, do not customize
-    ########## Driving response ends##########
+    # Get driving arrival time with Washington as origin and final destination, specific city, and departure date for 2 transportations 
+    driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Washington', variables['city'][0], 'Duration') # Use driving_0_arrtime, do not customize
+    driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'Washington', 'Duration') # Use driving_1_arrtime, do not customize

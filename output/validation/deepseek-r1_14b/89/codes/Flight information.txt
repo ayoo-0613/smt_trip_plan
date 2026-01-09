@@ -1,0 +1,18 @@
+# Set 'flight_index' variable for 3 transportations
+            variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(3)]
+            # Assert 3 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight
+            s.assert_and_track(variables['flight_index'][0] == -1, 'no flight allowed for flight 0')
+            s.assert_and_track(variables['flight_index'][1] == -1, 'no flight allowed for flight 1')
+            s.assert_and_track(variables['flight_index'][2] == -1, 'no flight allowed for flight 2')
+            # Calculate flight price for 2 people for 3 transportations based on flight index variable
+            flight_0_price = 0 # no flights allowed
+            flight_1_price = 0 # no flights allowed
+            flight_2_price = 0 # no flights allowed
+            # Get specific flight arrival time info with Atlanta as origin and final destination, specific city, and departure date for 3 transportations
+            s.assert_and_track(variables['flight_index'][0] == -1, 'no flight allowed for flight 0')
+            s.assert_and_track(variables['flight_index'][1] == -1, 'no flight allowed for flight 1')
+            s.assert_and_track(variables['flight_index'][2] == -1, 'no flight allowed for flight 2')
+            # Calculate flight arrival time for 3 transportations based on flight index variable
+            flight_0_arrtime = 0 # no flights allowed
+            flight_1_arrtime = 0 # no flights allowed
+            flight_2_arrtime = 0 # no flights allowed

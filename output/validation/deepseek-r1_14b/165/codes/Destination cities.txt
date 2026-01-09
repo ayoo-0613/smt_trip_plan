@@ -1,0 +1,10 @@
+cities = ['Los Angeles', 'San Francisco', 'San Diego']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')

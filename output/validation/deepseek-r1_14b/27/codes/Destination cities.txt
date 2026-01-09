@@ -1,0 +1,6 @@
+# Search for possible destination cities in Minnesota  
+cities = CitySearch.run('Minnesota', 'Minneapolis', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Minneapolis' in cities:
+    cities.remove('Minneapolis')
+# Set cities to be a list includes two cities in Minnesota
+cities = ['Saint Paul', 'Rochester']

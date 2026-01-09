@@ -1,0 +1,1 @@
+{"org": "Cedar Rapids", "dest": "Texas", "days": 5, "visiting_city_number": 2, "date": ["2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15"], "people_number": 2, "local_constraint": {"house rule": "visitors", "cuisine": ["Mediterranean", "Indian", "Italian", "Chinese"], "room type": null, "transportation": "no flight"}, "budget": 2400}

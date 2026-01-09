@@ -1,0 +1,21 @@
+# Run FlightSearch to get flight info for Monterey as origin, list of cities, city_0, city_1, and dates ["2022-03-09", "2022-03-10", "2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15"]
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Monterey', cities, [city_0, city_1], ["2022-03-09", "2022-03-10", "2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15"]) # use flight_info, do not customize
+                # Get specific flight price info with Monterey as origin and final destination, specific city, and departure date for 2 transportations
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Monterey', variables['city'][0], variables['departure_dates'][0], 'Price')
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'Price')
+                # Set 'flight_index' variable for 2 transportations
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(2)]
+                # Assert 2 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0,variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0,variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(Not(variables['flight'][1]), variables['flight_index'][1] == -1), 'valid flight index for flight 1')
+                # Calculate flight price for 4 people for 2 transportations based on flight index variable
+                flight_0_price = 4 * FlightSearch.get_info_for_index(flight_0_price_list, variables['flight_index'][0])
+                flight_1_price = 4 * FlightSearch.get_info_for_index(flight_1_price_list, variables['flight_index'][1])
+                # Get specific flight arrival time info with Monterey as origin and final destination, specific city, and departure date for 2 transportations
+                flight_0_arrtime_list, _ = FlightSearch.get_info(flight_info, 'Monterey', variables['city'][0], variables['departure_dates'][0], 'ArrTime')
+                flight_1_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'ArrTime')
+                # Calculate flight arrival time for 2 transportations based on flight index variable 
+                flight_0_arrtime = FlightSearch.get_info_for_index(flight_0_arrtime_list, variables['flight_index'][0])
+                flight_1_arrtime = FlightSearch.get_info_for_index(flight_1_arrtime_list, variables['flight_index'][1])

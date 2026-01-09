@@ -1,0 +1,22 @@
+transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+                transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+                arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime], 7, variables['departure_dates'])
+                city_list = get_city_list(variables['city'], 7, variables['departure_dates'])
+                # Run RestaurantSearch to get restaurant price info for all cities in Colorado
+                restaurant_price = RestaurantSearch.run_for_all_cities('Colorado')
+                # Set 'restaurant_in_which_city' variables for 21 (3 meals per day * 7 days) meals
+                variables['restaurant_in_which_city'] = [Int('restaurant_' + str(i)) for i in range(3*7)]
+                # For each 'restaurant_in_which_city' variable, assert it is either current city or next city based on transportation arrival times
+                for i, variable in enumerate(variables['restaurant_in_which_city']):
+                    date_index = i // 3
+                    meal_index = i % 3
+                    s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]),  'eat in which city')
+                    if meal_index == 0: # breakfast
+                        s.assert_and_track(Implies(arrives[date_index]> 10, variable == city_list[date_index]),'breakfast location')
+                        s.assert_and_track(Implies(arrives[date_index]< 5, variable == city_list[date_index+1]),'breakfast location')
+                    if meal_index == 1: # lunch
+                        s.assert_and_track(Implies(arrives[date_index]> 15, variable == city_list[date_index]),'lunch location')
+                        s.assert_and_track(Implies(arrives[date_index]< 10, variable == city_list[date_index+1]),'lunch location')
+                    if meal_index == 2: # dinner
+                        s.assert_and_track(Implies(arrives[date_index]> 22, variable == city_list[date_index]),'dinner location')
+                        s.assert_and_track(Implies(arrives[date_index]< 17, variable == city_list[date_index+1]),'dinner location')

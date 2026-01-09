@@ -1,0 +1,14 @@
+flight_info = FlightSearch.run_for_all_cities_and_dates('Little Rock', cities, [city_0], ["2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17", "2022-03-18"]) # use flight_info, do not customize
+            # Get specific flight price info with Little Rock as origin and final destination, specific city, and departure date for 1 transportation
+            flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Little Rock', variables['city'][0], variables['departure_dates'][0], 'Price')
+            # Set 'flight_index' variable for 1 transportation
+            variables['flight_index'] = [Int('flight_0_index'.format(i)) for i in range(1)]
+            # Assert flight index is within valid range if taking flight, assert flight index to be -1 if not taking flight
+            s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0,variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+            s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+            # Calculate flight price for 2 people for 1 transportation based on flight index variable
+            flight_0_price = 2 * FlightSearch.get_info_for_index(flight_0_price_list, variables['flight_index'][0])
+            # Get specific flight arrival time info with Little Rock as origin and final destination, specific city, and departure date for 1 transportation
+            flight_0_arrtime_list, _ = FlightSearch.get_info(flight_info, 'Little Rock', variables['city'][0], variables['departure_dates'][0], 'ArrTime')
+            # Calculate flight arrival time based on flight index variable 
+            flight_0_arrtime = FlightSearch.get_info_for_index(flight_0_arrtime_list, variables['flight_index'][0]) # Use flight_0_arrtime, do not customize

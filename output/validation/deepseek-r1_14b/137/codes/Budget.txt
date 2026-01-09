@@ -1,0 +1,7 @@
+variables['budget_limit'] = RealVal(2000)
+    spent = 0
+    spent += If(variables['flight'][0], flight_0_price, taxi_0_price)
+    spent += If(variables['flight'][1], flight_1_price, taxi_1_price)
+    spent += all_restaurant_price
+    spent += all_accommodation_price
+    s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')

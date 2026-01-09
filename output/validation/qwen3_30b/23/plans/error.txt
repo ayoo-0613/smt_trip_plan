@@ -1,1 +1,1 @@
-Expecting value: line 1 column 1 (char 0)
+Unknown step type. Header: However, note: the examples have a step for "Get arrivals and city list for each day" which uses the departure dates. So we'll set the departure dates for the two trips.

@@ -1,0 +1,15 @@
+# Run DistanceSearch to get driving info for Greer as origin and city_0  
+            driving_info = DistanceSearch.run_for_all_cities('Greer', cities, [city_0])  # use driving_info, do not customize  
+            
+            # Get specific driving distance info with Greer as origin and final destination, specific city, and departure date for 1 transportation  
+            driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Greer', variables['city'][0], 'Distance')  
+            
+            # Assert driving info is not empty if driving  
+            s.assert_and_track(Implies(Or(variables['self-driving'][0], variables['taxi'][0]), driving_0_length > 0), 'driving is possible for transportation 0')  
+            
+            # Calculate self-driving and taxi price for 2 people and 1 transportation based on driving distance  
+            self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)  
+            taxi_0_price = driving_0_distance * math.ceil(2 / 4)  
+            
+            # Get driving arrival time with Greer as origin and final destination, specific city, and departure date for 1 transportation  
+            driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Greer', variables['city'][0], 'Duration')  # Use driving_0_arrtime, do not customize

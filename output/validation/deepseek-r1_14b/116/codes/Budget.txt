@@ -1,0 +1,14 @@
+# Define the total budget as $14,900
+                variables['budget_limit'] = RealVal(14900)
+                # Calculate total expenditure by summing transportation, restaurant, and accommodation costs
+                spent = 0
+                # Transportation cost for each trip
+                spent += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, taxi_0_price))
+                spent += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, taxi_1_price))
+                spent += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, taxi_2_price))
+                # Add restaurant cost
+                spent += all_restaurant_price
+                # Add accommodation cost
+                spent += all_accommodation_price
+                # Assert total expenditure does not exceed budget
+                s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')

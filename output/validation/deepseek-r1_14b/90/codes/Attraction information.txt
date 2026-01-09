@@ -1,0 +1,17 @@
+# Run AttractionSearch to get attraction info for Ann Arbor and Detroit
+            cities = ['Ann Arbor', 'Detroit']
+            attraction_info = AttractionSearch.run_for_all_cities(cities, cities)
+            
+            # Set 'attraction_in_which_city' variables for 5 (1 per day) attractions
+            variables['attraction_in_which_city'] = [Int('attraction_' + str(i)) for i in range(5)]
+            
+            # For each 'attraction_in_which_city' variable, assert it is either current or next city based on transportation arrival time
+            for i, variable in enumerate(variables['attraction_in_which_city']):
+                s.assert_and_track(variable == If(arrives[i] > 18, cities[i], cities[i+1]), 'attraction in which city')
+            
+            # Set 'attraction_index' variables for 5 attractions
+            variables['attraction_index'] = [Int('attraction_{}_index'.format(i)) for i in range(5)]
+            
+            # Get specific attraction details and calculate total attraction cost
+            total_cost = Int('total_attraction_cost')
+            s.assert_and_track(total_cost == Sum([AttractionSearch.get_info(attraction_info, variables['attraction_in_which_city'][i])[variables['attraction_index'][i]] for i in range(5)]), 'calculate total attraction cost')

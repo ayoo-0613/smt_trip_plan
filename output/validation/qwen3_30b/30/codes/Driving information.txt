@@ -1,0 +1,6 @@
+self_driving_0_price = 0.05 * driving_0_distance * math.ceil(3 / 5)
+            self_driving_1_price = 0.05 * driving_1_distance * math.ceil(3 / 5)
+            self_driving_2_price = 0.05 * driving_2_distance * math.ceil(3 / 5)
+            taxi_0_price = driving_0_distance * math.ceil(3 / 4)
+            taxi_1_price = driving_1_distance * math.ceil(3 / 4)
+            taxi_2_price = driving_2_distance * math.ceil(3 / 4)

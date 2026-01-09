@@ -1,0 +1,33 @@
+<think>
+Alright, I need to help the user extract information from their text and structure it into JSON as per their examples. Let me break down the query step by step.
+
+First, the user provided a sample text asking for a 5-day itinerary starting in Albuquerque and visiting two cities in Texas from March 25th to 29th, 2022. The budget is $2100, and it's for one person.
+
+Looking at the examples, I see that "org" is the departure city, so here it should be "Albuquerque". The destination is Texas, but since they're visiting two cities there, "dest" will be "Texas", and "visiting_city_number" is 2. 
+
+The number of days is clearly stated as 5, so "days": 5. The dates need to be in an array with the format YYYY-MM-DD. March 25th is 2022-03-25, up to March 29th, so I'll list all five dates.
+
+The user mentions it's for one person, so "people_number": 1. Now, checking the local constraints: house rule, cuisine, room type, transportation. The text doesn't mention any specific rules like parties or smoking, nor does it specify cuisine preferences. There's no info on room type or transportation restrictions either. So all local constraints should be null.
+
+The budget is $2100, so that goes in as "budget": 2100. I need to make sure all fields are filled except where specified to be null if not mentioned.
+
+Putting it all together, the JSON structure follows the examples closely, ensuring each field is correctly populated based on the text provided.
+</think>
+
+```json
+{
+    "org": "Albuquerque", 
+    "dest": "Texas", 
+    "days": 5, 
+    "visiting_city_number": 2, 
+    "date": ["2022-03-25", "2022-03-26", "2022-03-27", "2022-03-28", "2022-03-29"], 
+    "people_number": 1, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": null, 
+        "transportation": null
+    }, 
+    "budget": 2100
+}
+```

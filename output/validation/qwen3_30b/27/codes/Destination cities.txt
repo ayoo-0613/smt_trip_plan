@@ -1,0 +1,13 @@
+# We assume that cities is the list of cities in Minnesota (with at least two distinct cities)
+# We are going to consider every pair of distinct cities (by index)
+for city_0_index in range(len(cities)):
+    for city_1_index in range(len(cities)):
+        if city_0_index != city_1_index:
+            # Initialize Z3 solver s
+            s = Optimize()
+            # Set 'city' variable to be indexes of 2 destination cities
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            # Assert the two city indices are distinct and equal to the chosen indices
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+            # ... (then we would add more constraints for the travel plan, but the problem only asks for the destination cities constraint)

@@ -1,0 +1,31 @@
+# Set 'departure_dates' variables for 2 transportations between cities
+            variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 4, 'travel end date')
+cities = ['Milwaukee']
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] > 0, 'valid travel date')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index,  'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index,  'visit city in cities list')
+and end with:
+# Loop through cities for 3 destination cities
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            # If city_0_index, city_1_index and city_2_index are not same, assert 3 'city' variables equal to city index
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s = Optimize()
+                variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(4)]
+cities = ['Miami', 'Orlando']
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(3)]

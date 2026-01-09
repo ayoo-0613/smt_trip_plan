@@ -1,0 +1,16 @@
+# Set budget limit variable to be 4700
+                variables['budget_limit'] = RealVal(4700)
+                
+                # Sum up transportation costs from flight or driving info
+                spent = 0
+                spent += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, taxi_0_price))
+                spent += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, taxi_1_price))
+                spent += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, taxi_2_price))
+                
+                # Add restaurant costs, attraction costs, and accommodation costs
+                spent += all_restaurant_price
+                spent += all_attraction_price
+                spent += all_accommodation_price
+                
+                # Assert total spent is less than or equal to 4700
+                s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')

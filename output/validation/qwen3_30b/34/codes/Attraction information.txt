@@ -1,0 +1,1 @@
+attraction_info = AttractionSearch.run_for_all_cities(cities, [cities[0], cities[1]])

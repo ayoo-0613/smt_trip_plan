@@ -1,0 +1,39 @@
+<think>
+Alright, I need to help the user extract information from their text and structure it into JSON as per their examples. Let me break down what they provided.
+
+First, the departure city is Seattle, so "org" will be "Seattle". The destination is San Francisco, so "dest" is "San Francisco".
+
+The trip spans 3 days, from March 21st to March 23rd, 2022. So I'll list those dates in order under "date".
+
+Since the user specified a 3-day trip and didn't mention visiting multiple cities within California (since San Francisco is the destination), "visiting_city_number" should be 1.
+
+The travel is for one person, so "people_number" is 1. 
+
+Looking at local constraints: house rules, cuisine, room type, transportation. The text doesn't mention any of these, so all will be null in the JSON.
+
+Budget is $900, which I'll include as a number without the dollar sign.
+
+I should make sure the date format matches the examples, using YYYY-MM-DD for each day. Also, ensure that "days" is correctly set to 3 and "visiting_city_number" is 1 since it's only San Francisco.
+
+No other constraints are mentioned, so all local constraints remain null. Budget is straightforward at $900.
+
+I think I've covered all the necessary fields as per the examples. Now, I'll structure this into JSON.
+</think>
+
+```json
+{
+    "org": "Seattle", 
+    "dest": "San Francisco", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-21", "2022-03-22", "2022-03-23"], 
+    "people_number": 1, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": null, 
+        "transportation": null
+    }, 
+    "budget": 900
+}
+```

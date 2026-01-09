@@ -1,0 +1,41 @@
+<think>
+Alright, let's tackle this query step by step. The user has provided a text and wants me to extract information into JSON format following specific guidelines. First, I'll read the text carefully.
+
+The text mentions a 3-day travel plan for two people starting in Nashville and ending in Detroit from March 15th to March 17th, 2022. The budget is $2,200. They require accommodations that allow smoking and prefer non-shared rooms. Also, they don't want to self-drive.
+
+I'll start by identifying the key components: departure city (org), destination (dest), number of days, visiting cities if any, dates, people number, local constraints, and budget.
+
+From the text:
+- org is Nashville.
+- dest is Detroit.
+- days are 3, so visiting_city_number should be 1 since it's within the same state or region.
+- Dates need to be converted into an array of YYYY-MM-DD format: March 15th becomes 2022-03-15, and so on until March 17th.
+- People number is 2.
+
+Now, local constraints:
+- House rules mention smoking, so "smoking" should be included under house rule.
+- Room type is specified as not shared, which corresponds to "not shared room".
+- Transportation constraint is no self-driving, so that's set to "no self-driving".
+
+Cuisine isn't mentioned, so it remains null. The other constraints like parties, children, pets, and visitors aren't relevant here.
+
+Putting it all together into the JSON structure as per examples, ensuring each field is correctly mapped. I'll make sure not to include any fields that aren't specified except for local constraints which can have nulls if needed.
+</think>
+
+```json
+{
+    "org": "Nashville", 
+    "dest": "Detroit", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-15", "2022-03-16", "2022-03-17"], 
+    "people_number": 2, 
+    "local_constraint": {
+        "house rule": "smoking", 
+        "cuisine": null, 
+        "room type": "not shared room", 
+        "transportation": "no self-driving"
+    }, 
+    "budget": 2200
+}
+```

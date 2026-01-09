@@ -1,0 +1,18 @@
+# Run DistanceSearch to get driving info for Akron as origin and each Georgia city
+                driving_info = DistanceSearch.run_for_all_cities('Akron', cities, variables['city'])  # use driving_info, do not customize
+                # Run DistanceSearch to get driving info between cities for transportation legs
+                driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])  # use driving_info, do not customize
+                driving_info = DistanceSearch.run_for_all_cities(variables['city'][1], cities, [variables['city'][2]])  # use driving_info, do not customize
+                
+                # Calculate self-driving and taxi prices for 2 people for each transportation leg
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(2 / 5)
+                taxi_0_price = driving_0_distance * math.ceil(2 / 4)
+                taxi_1_price = driving_1_distance * math.ceil(2 / 4)
+                taxi_2_price = driving_2_distance * math.ceil(2 / 4)
+                
+                # Get driving arrival times for each leg
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Akron', variables['city'][0], 'Duration')  # Use driving_0_arrtime, do not customize
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration')  # Use driving_1_arrtime, do not customize
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][1], variables['city'][2], 'Duration')  # Use driving_2_arrtime, do not customize

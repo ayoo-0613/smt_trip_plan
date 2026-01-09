@@ -1,0 +1,6 @@
+# Run FlightSearch to get flight info for Eugene as origin, list of cities, city_0 on day 0
+    flight_info = FlightSearch.run_for_all_cities_and_dates('Eugene', cities, [city_0], ["2022-03-16"]) # use flight_info, do not customize
+    # Set 'flight_index' variable for 1 transportation
+    variables['flight_index'] = [Int('flight_0_index')]
+    # Assert 'flight' variable is -1 for both transportations (no flights)
+    s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')

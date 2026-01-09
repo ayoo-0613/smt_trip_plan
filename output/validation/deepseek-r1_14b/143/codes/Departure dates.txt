@@ -1,0 +1,12 @@
+# Set 'departure_dates' variables for 4 transportations (including arrival in Florida)
+            variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(4)]
+            # Assert first transportation happens on March 2nd (day 0), last transportation on March 6th (day 4)
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation on March 2nd')
+            s.assert_and_track(variables['departure_dates'][3] == 4, 'last transportation on March 6th')
+            # Ensure departure dates are in order and within valid range
+            s.assert_and_track(And(variables['departure_dates'][1] > 0, variables['departure_dates'][1] < 4), 'valid intermediate date')
+            s.assert_and_track(And(variables['departure_dates'][2] > variables['departure_dates'][1], variables['departure_dates'][2] < 4), 'valid intermediate date')
+            # Ensure departure dates align with travel duration and budget constraints
+            s.assert_and_track(variables['departure_dates'][0] <= variables['departure_dates'][1], 'travel duration constraint')
+            s.assert_and_track(variables['departure_dates'][1] <= variables['departure_dates'][2], 'travel duration constraint')
+            s.assert_and_track(variables['departure_dates'][2] <= variables['departure_dates'][3], 'travel duration constraint')

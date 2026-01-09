@@ -1,0 +1,7 @@
+# Run AttractionSearch for each city to gather attraction details
+                attraction_info = AttractionSearch.run_for_all_cities(cities, [])
+                # Set 'attraction_in_which_city' variables for all cities
+                variables['attraction_in_which_city'] = [Int('attraction_' + str(city)) for city in cities]
+                # For each 'attraction_in_which_city' variable, assert it to be either -1 or a valid city
+                for i, variable in enumerate(variables['attraction_in_which_city']):
+                    s.assert_and_track(Or(variable == -1, variable == cities[0], variable == cities[1], ...), 'valid attraction city')

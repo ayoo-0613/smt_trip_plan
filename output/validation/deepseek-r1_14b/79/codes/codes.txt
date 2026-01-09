@@ -1,0 +1,62 @@
+cities = ['Los Angeles']
+for city_0_index, city_0 in enumerate(cities):
+    s = Optimize()
+    variables['city'] = [Int('city_' + str(i)) for i in range(1)]
+    s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+    s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+    s.assert_and_track(variables['departure_dates'][1] == 2, 'travel end date')
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(2)]
+    variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(2)]
+    variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(2)]
+    
+    s.assert_and_track(Or(variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]), 'either flight, self-driving, or taxi for first transportation')
+    s.assert_and_track(Or(variables['flight'][1], variables['self-driving'][1], variables['taxi'][1]), 'either flight, self-driving, or taxi for second transportation')
+    
+    s.assert_and_track(Not(Or(And(variables['flight'][0], variables['self-driving'][0]), And(variables['flight'][0], variables['taxi'][0]), And(variables['taxi'][0], variables['self-driving'][0]))), 'flight, self-driving, and taxi not simultaneously for first transportation')
+    s.assert_and_track(Not(Or(And(variables['flight'][1], variables['self-driving'][1]), And(variables['flight'][1], variables['taxi'][1]), And(variables['taxi'][1], variables['self-driving'][1]))), 'flight, self-driving, and taxi not simultaneously for second transportation')
+    
+    s.assert_and_track(Implies(Or(variables['flight'][0], variables['flight'][1]), Not(Or(variables['self-driving'][0], variables['self-driving'][1]))), 'no self-driving if taken flight for any transportation')
+    s.assert_and_track(Implies(Or(variables['taxi'][0], variables['taxi'][1]), Not(Or(variables['self-driving'][0], variables['self-driving'][1]))), 'no self-driving if taken taxi for any transportation')
+    
+    s.assert_and_track(Not(variables['self-driving'][0]), 'no self-driving for first transportation')
+    s.assert_and_track(Not(variables['self-driving'][1]), 'no self-driving for second transportation')
+# Run FlightSearch to get flight info for Eugene as origin, list of cities, city_0 on day 0
+    flight_info = FlightSearch.run_for_all_cities_and_dates('Eugene', cities, [city_0], ["2022-03-16"]) # use flight_info, do not customize
+    # Set 'flight_index' variable for 1 transportation
+    variables['flight_index'] = [Int('flight_0_index')]
+    # Assert 'flight' variable is -1 for both transportations (no flights)
+    s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+# Calculate distance from Eugene to Los Angeles
+    driving_info = DistanceSearch.run_for_all_cities('Eugene', cities, [variables['city'][0]])
+    distance_eugene_la, _ = DistanceSearch.get_info(driving_info, 'Eugene', variables['city'][0], 'Distance')
+    arr_time_eugene_la, _ = DistanceSearch.get_info(driving_info, 'Eugene', variables['city'][0], 'Duration')
+    
+    # Set driving cost based on mileage or actual costs
+    self_driving_price = 0.05 * distance_eugene_la * math.ceil(3 / 5)
+    taxi_price = distance_eugene_la * math.ceil(3 / 4)
+# For each date, check if current city is Los Angeles
+    for date_index in range(5):
+        # If current city is Los Angeles
+        If(city_list[date_index] == 'Los Angeles'):
+            # Assert that at least one restaurant is available in Los Angeles for this date
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 0] == 'Los Angeles', '.restaurant availability in LA b')
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 1] == 'Los Angeles', 'restaurant availability in LA l')
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 2] == 'Los Angeles', 'restaurant availability in LA d')
+# Search for accommodations in Los Angeles with private rooms
+    for i, city in enumerate(variables['city']):
+        if city == 'Los Angeles':
+            accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+            selected_room_type = AccommodationSearch.get_info_for_index(accommodation_room_types_list, variables['accommodation_index'][i])
+            s.assert_and_track(selected_room_type == 'private room', 'Private room in Los Angeles')
+    if s.check() == sat:
+        print('ok')
+        plan = generate_as_plan(s, variables, query_json)
+        with open(path+'plans/' + 'plan.txt', 'w') as f:
+            f.write(plan)
+        f.close()
+        break
+    else:
+        print('not ok')
+        c = s.unsat_core()
+        print(c)

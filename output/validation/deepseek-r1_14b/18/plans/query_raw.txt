@@ -1,0 +1,35 @@
+<think>
+Alright, I need to help the user extract information from their text and structure it into JSON as per their instructions. Let me break down what they provided.
+
+First, the departure city is Denver, so "org" should be "Denver". The destination is Palm Springs, so "dest" is "Palm Springs".
+
+The trip spans 3 days, from March 27th to March 29th, 2022. So I'll list those dates in order under "date".
+
+There's only one person traveling, so "people_number" is 1.
+
+Looking at the local constraints: house rule, cuisine, room type, and transportation. The user mentioned no specific constraints, so all these should be null.
+
+The budget is $2,200, which I'll include as a number without the dollar sign.
+
+I need to make sure that "visiting_city_number" is 1 since it's a direct trip from Denver to Palm Springs with no intermediate cities mentioned. Also, since days are exactly 3, visiting_city_number defaults to 1 unless specified otherwise.
+
+Double-checking all fields to ensure they're correctly mapped and nothing is missed.
+</think>
+
+```json
+{
+    "org": "Denver", 
+    "dest": "Palm Springs", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-27", "2022-03-28", "2022-03-29"], 
+    "people_number": 1, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": null, 
+        "transportation": null
+    }, 
+    "budget": 2200
+}
+```

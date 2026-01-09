@@ -1,0 +1,2 @@
+driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'St. Petersburg', variables['city'][0], 'Duration')
+            driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'St. Petersburg', 'Duration')

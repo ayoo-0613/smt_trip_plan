@@ -1,0 +1,1 @@
+{"org": "Newark", "dest": "Ohio", "days": 5, "visiting_city_number": 2, "date": ["2022-03-23", "2022-03-24", "2022-03-25", "2022-03-26", "2022-03-27"], "people_number": 2, "local_constraint": {"house rule": "visitors", "cuisine": ["French", "Chinese", "American", "Mexican"], "room type": null, "transportation": "no self-driving"}, "budget": 4400}

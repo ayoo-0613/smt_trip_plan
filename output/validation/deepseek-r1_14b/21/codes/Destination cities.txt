@@ -1,0 +1,5 @@
+cities = ['Miami', 'Orlando']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        s = Optimize()
+        variables['city'] = [Int('city_' + str(i)) for i in range(2)]

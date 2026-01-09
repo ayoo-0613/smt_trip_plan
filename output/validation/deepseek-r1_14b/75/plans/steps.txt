@@ -1,0 +1,95 @@
+<think>
+Okay, so I need to create a step-by-step instruction based on the given natural language query. The user wants a 3-day travel itinerary from Jacksonville to Washington for two people between March 3rd and March 5th, 2022, with a budget of $1,000. They also mentioned that they're looking for accommodations where parties are allowed.
+
+First, I'll start by identifying the key components in their query. The main points are:
+
+- Itinerary duration: 3 days
+- Number of people: 2
+- Departure city: Jacksonville
+- Destination city: Washington (I assume this is Washington D.C.)
+- Travel dates: March 3rd to March 5th, 2022
+- Budget: $1,000
+- Accommodation requirement: Party-friendly
+
+Looking at the examples provided, each step starts with a '#' and follows a specific structure. I'll need to break down each part of their query into these steps.
+
+Starting with destination cities, since they're traveling from Jacksonville to Washington, the main city is Washington. So, I'll set the cities list to include only Washington. Then, loop through this list for 1 destination city and initialize the Z3 solver 's'.
+
+Next, departure dates: there are two transportations (Jacksonville to Washington and maybe another within Washington?), but since it's a 3-day trip, perhaps just one transportation from Jacksonville to Washington. I'll set 'departure_dates' variables for 2 transportations, with the first happening on day 0 and the last on day 2.
+
+Transportation methods: They don't want flights, so only self-driving or taxi. So, I'll set the transportation method variable for 2 transportations, ensuring that neither is a flight.
+
+For flight information, since they're not taking flights, I can skip this step or note that flight indices are -1.
+
+Driving information will be necessary as they're using self-driving or taxi. I'll run a search for driving info from Jacksonville to Washington and calculate the costs based on distance.
+
+Restaurant information: They want to experience both American and Chinese cuisines. So, I'll set up variables for these cuisine types and ensure that each meal option meets their requirements.
+
+Attraction information: Need to plan 3 attractions, one per day, either in the current or next city based on transportation times.
+
+Accommodation information: Focus on finding places with private rooms and party-friendly policies. So, I'll search for accommodations in Washington and set up variables accordingly.
+
+Finally, budgeting: Sum up all expenses (transportation, food, attractions, accommodation) and ensure it doesn't exceed $1,000.
+
+I think that covers all the necessary steps based on the examples provided.
+</think>
+
+# Destination cities #  
+# Set cities to be a list includes Washington only  
+# Loop through cities for 1 destination cities  
+# Initialize Z3 solver s  
+# Set 'city' variable to be indexes of 1 destination cities  
+# Assert 'city' variable equal to city index  
+
+# Departure dates #  
+# Set 'departure_dates' variables for 2 transportations between cities  
+# Assert first transportation happens at first day (day 0), last transportation happens at last day (day 2)  
+
+# Transportation methods #  
+# Set transportation method (flight, self-driving, taxi) variable for 2 transportations between cities  
+# Assert only one of flight, self-driving, or taxi is used for 2 transportations between cities, self-driving is not valid if taxi or flight is used for any transportation  
+# Assert all 2 transportations between cities are not flight  
+
+# Flight information #  
+# Run FlightSearch to get flight info for Jacksonville as origin, list of cities, city_0, and dates ["2022-03-03", "2022-03-04", "2022-03-05"]  
+# Get specific flight price info with Jacksonville as origin and final destination, specific city, and departure date for 2 transportations  
+# Set 'flight_index' variable for 2 transportations  
+# Assert 2 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight  
+
+# Driving information #  
+# Run DistanceSearch to get driving info for Jacksonville as origin and city_0  
+# Get specific driving distance info with Jacksonville as origin and final destination, specific city, and departure date for 2 transportations  
+# Assert driving info is not empty if driving  
+# Calculate self-driving and taxi price for 2 people and 2 transportations based on driving distance  
+# Get driving arrival time with Jacksonville as origin and final destination, specific city, and departure date for 2 transportations  
+
+# Restaurant information #  
+# Get arrivals and city list for each day based on 2 transportations, 3 total travel day, and departure dates variables  
+# Run RestaurantSearch to get restaurant price info and cuisine info for city_0  
+# Set 'restaurant_in_which_city' variables for 9 (3 meals per day, 3 days) meals  
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'restaurant_index' variables for 9 (3 meals per day, 3 days) meals  
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, assert restaurants in same city are not repeated, and calculate restaurant price for 2 people  
+# Set 'cuisine_type' variables for each cuisine type ["American", "Chinese"] required  
+# For each cuisine type, iterate through all restaurant to check if it is satisfied  
+
+# Attraction information #  
+# Run AttractionSearch to get attraction info for city_0  
+# Set 'attraction_in_which_city' variables for 3 (1 per day) attractions  
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'attraction_index' variables for 3 (1 per day) attractions  
+# For each 'attraction_index', get specific length info based on attraction in which city variable, assert index are within valid range, and attrations in same city are not repeated  
+
+# Accommodation information #  
+# Run AccommodationSearch to get accommodation info and accommodation constraints for city_0  
+# Set 'accommodation_index' variables for 1 (1 per city) accommodations  
+# For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 2 people and accommodation price  
+# For each city, get accommodation minimum night info and assert it to be less than the days stay in this city  
+# For each 'accommodation_index', get specific room type and house rules info, assert 'Private room' exist for all accommodations  
+
+# Budget #  
+# Set budget limit variable to be 1000  
+# Add 2 transportation price to spent, according to whether transportation method is flight, self-driving, or taxi  
+# Add restaurant price to spent  
+# Add accommodation price to spent  
+# Assert current spent is within budget

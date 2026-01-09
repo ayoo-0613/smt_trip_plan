@@ -1,0 +1,12 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(4)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation starts at day 0')
+            s.assert_and_track(variables['departure_dates'][3] == 4, 'last transportation ends at day 4')
+            s.assert_and_track(And(variables['departure_dates'][1] > 0,
+                                   variables['departure_dates'][1] < variables['departure_dates'][2]),
+                               'second transportation is between first and third')
+            s.assert_and_track(And(variables['departure_dates'][2] > variables['departure_dates'][1],
+                                   variables['departure_dates'][2] < variables['departure_dates'][3]),
+                               'third transportation is between second and fourth')
+            s.assert_and_track(variables['departure_dates'][0] <= variables['departure_dates'][1] <= 
+                               variables['departure_dates'][2] <= variables['departure_dates'][3], 
+                               'transportation dates are in order')

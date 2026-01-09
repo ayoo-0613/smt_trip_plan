@@ -1,0 +1,29 @@
+<think>
+Alright, let's tackle this query step by step. The user has provided a text and wants me to extract information into JSON format following specific guidelines. First, I'll read the text carefully.
+
+The text mentions a 7-day travel plan for a group of 5 departing from Provo to visit 3 cities in California. Dates are March 22nd to 28th, 2022, with a budget of $14,900 and accommodations that allow parties.
+
+Starting with the JSON structure: "org" is departure city, so Provo. "dest" is destination state, which is California. Days are 7, so visiting_city_number should be 3 since it's within California. Dates need to be formatted as an array from March 22nd to 28th.
+
+People number is clearly stated as 5. Budget is $14,900. Now for local constraints: house rule mentions parties, so that's "parties". Cuisine isn't mentioned, so null. Room type and transportation aren't specified either, so both are null.
+
+I need to ensure all fields have values except where specified as null. The JSON should match the examples provided, with correct date formatting and proper structure for local constraints.
+</think>
+
+```json
+{
+    "org": "Provo", 
+    "dest": "California", 
+    "days": 7, 
+    "visiting_city_number": 3, 
+    "date": ["2022-03-22", "2022-03-23", "2022-03-24", "2022-03-25", "2022-03-26", "2022-03-27", "2022-03-28"], 
+    "people_number": 5, 
+    "local_constraint": {
+        "house rule": "parties", 
+        "cuisine": null, 
+        "room type": null, 
+        "transportation": null
+    }, 
+    "budget": 14900
+}
+```

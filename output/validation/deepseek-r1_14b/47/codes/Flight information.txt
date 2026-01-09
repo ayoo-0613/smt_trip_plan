@@ -1,0 +1,16 @@
+########## Flight response##########
+                # Run FlightSearch to get flight info for Palm Springs as origin, list of cities, city_0, city_1, city_2, and dates ["2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17", "2022-03-18", "2022-03-19"]
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Palm Springs', cities, [city_0, city_1, city_2], ["2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17", "2022-03-18", "2022-03-19"])  # use flight_info, do not modify
+                
+                # Get specific flight info for each transportation
+                flight_0_price_list, _ = FlightSearch.get_info(flight_info, 'Palm Springs', city_0, departure_dates[0], 'Price')
+                flight_1_price_list, _ = FlightSearch.get_info(flight_info, city_0, city_1, departure_dates[1], 'Price')
+                flight_2_price_list, _ = FlightSearch.get_info(flight_info, city_1, city_2, departure_dates[2], 'Price')
+                flight_3_price_list, _ = FlightSearch.get_info(flight_info, city_2, city_1, departure_dates[3], 'Price')
+                flight_4_price_list, _ = FlightSearch.get_info(flight_info, city_1, city_0, departure_dates[4], 'Price')
+                flight_5_price_list, _ = FlightSearch.get_info(flight_info, city_0, 'Palm Springs', departure_dates[5], 'Price')
+                
+                # Set up flight index variables for each transportation
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(6)]
+                
+                ########## End of response ##########

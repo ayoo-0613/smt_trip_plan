@@ -1,0 +1,13 @@
+# Run DistanceSearch to get driving distances between cities for each transportation leg  
+                driving_info = DistanceSearch.run_for_all_cities('Atlanta', cities, [city_0, city_1])  # use driving_info, do not customize
+                driving_info = DistanceSearch.run_for_all_cities(city_0, cities, [city_1])  # use driving_info, do not customize
+                driving_info = DistanceSearch.run_for_all_cities(city_1, cities, ['Atlanta'])  # use driving_info, do not customize
+                
+                # Calculate self-driving and taxi prices based on distance for 1 person  
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(1 / 5)
+                taxi_0_price = driving_0_distance * math.ceil(1 / 4)
+                
+                # Get driving arrival times for each leg
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Atlanta', city_0, 'Duration') # Use driving_0_arrtime, do not customize
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, city_0, city_1, 'Duration') # Use driving_1_arrtime, do not customize
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, city_1, 'Atlanta', 'Duration') # Use driving_2_arrtime, do not customize

@@ -1,0 +1,72 @@
+<think>
+Okay, so I need to help plan a week-long vacation based on the given natural language query. Let me break down what's required step by step.
+
+First, the user is planning a trip for two people starting from Chattanooga and visiting three cities in Georgia. The travel dates are from March 24th to March 30th, 2022, which gives us seven days. They have a budget of $6,800 and don't want to take any flights. They're traveling with young children under 10, so the accommodations need to be child-friendly and preferably entire rooms.
+
+Looking at the examples provided, I see that each query is broken down into several sections: destination cities, departure dates, transportation methods, flight info (which we might not need here since they prefer not to fly), driving info, restaurant information, attraction info, accommodation info, and budgeting. 
+
+Starting with destination cities, since they want to visit three cities in Georgia, I'll list those out. Then, for departure dates, there are two transportations between the starting point (Chattanooga) and each city, so I need to set variables for that.
+
+Transportation methods will focus on driving since flights are off the table. For each transportation leg, we'll calculate costs based on self-driving or taxi, but since they prefer not to fly, all transportations will be by car.
+
+For restaurant information, considering their budget and family size, I need to ensure meals are affordable and suitable for children. They also mentioned a preference for American cuisine, so I'll focus on that.
+
+Accommodation needs to be child-friendly with private rooms. I'll search for options in each city that meet these criteria and fit within the budget.
+
+Finally, the budgeting section will sum up all expenses: transportation, food, and accommodation, ensuring it doesn't exceed $6,800.
+
+I should structure each step clearly, following the examples provided, making sure to address each requirement methodically.
+</think>
+
+# Destination cities #  
+# Set cities to be a list includes three cities in Georgia (e.g., Atlanta, Savannah, Athens)  
+# Loop through cities for 3 destination cities  
+# Initialize Z3 solver s  
+# Set 'city' variable to be indexes of 3 destination cities  
+# Assert 'city' variables equal to respective city indexes  
+
+# Departure dates #  
+# Set 'departure_dates' variables for 4 transportations between cities (including return trip)  
+# Assert first transportation happens at first day (day 0), last transportation happens at last day (day 6)  
+
+# Transportation methods #  
+# Set transportation method (self-driving, taxi) variable for 4 transportations between cities  
+# Assert only self-driving or taxi is used for all transportations  
+# Assert no flights are taken  
+
+# Driving information #  
+# Run DistanceSearch to get driving info for Chattanooga as origin and each city in Georgia  
+# Get specific driving distance info with Chattanooga as origin and final destination, specific city, and departure date for 4 transportations  
+# Calculate self-driving or taxi price for 2 people and 4 transportations based on driving distance  
+# Get driving arrival time with Chattanooga as origin and final destination, specific city, and departure date for each transportation  
+
+# Restaurant information #  
+# Get arrivals and city list for each day based on 4 transportations, 7 total travel days, and departure dates variables  
+# Run RestaurantSearch to get restaurant price info and cuisine info for each city in Georgia  
+# Set 'restaurant_in_which_city' variables for 21 (3 meals per day, 7 days) meals  
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'restaurant_index' variables for 21 (3 meals per day, 7 days) meals  
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, assert restaurants in same city are not repeated, and calculate restaurant price for 2 people  
+# Set 'cuisine_type' variables for American cuisine required  
+# For each cuisine type, iterate through all restaurant to check if it is satisfied  
+
+# Attraction information #  
+# Run AttractionSearch to get attraction info for each city in Georgia  
+# Set 'attraction_in_which_city' variables for 7 (1 per day) attractions  
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'attraction_index' variables for 7 (1 per day) attractions  
+# For each 'attraction_index', get specific length info based on attraction in which city variable, assert index are within valid range, and attrations in same city are not repeated  
+
+# Accommodation information #  
+# Run AccommodationSearch to get accommodation info and accommodation constraints for each city in Georgia  
+# Set 'accommodation_index' variables for 3 (1 per city) accommodations  
+# For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 2 people and accommodation price  
+# For each city, get accommodation minimum night info and assert it to be less than the days stay in this city  
+# For each 'accommodation_index', get specific room type and house rules info, assert 'Private room' exist for all accommodations, assert 'No children under 10' does not exist for all accommodations  
+
+# Budget #  
+# Set budget limit variable to be 6800  
+# Add 4 transportation price to spent, according to whether transportation method is self-driving or taxi  
+# Add restaurant price to spent  
+# Add accommodation price to spent  
+# Assert current spent is within budget

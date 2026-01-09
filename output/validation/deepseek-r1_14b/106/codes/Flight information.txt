@@ -1,0 +1,15 @@
+# Run FlightSearch to get flight info for Akron as origin and each Georgia city as destination on respective dates
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Akron', ['Georgia City 1', 'Georgia City 2', ...], ["2022-03-16", "2022-03-17", "2022-03-18"]) # use flight_info, do not customize
+                
+                # Get specific flight price info for each transportation leg
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Akron', 'Georgia City 1', variables['departure_dates'][0], 'Price')
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, 'Georgia City 1', 'Georgia City 2', variables['departure_dates'][1], 'Price')
+                # Continue similarly for other Georgia cities...
+                
+                # Set 'flight_index' variable for each flight leg
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(n)] # n is number of transportation legs
+                
+                # Assert 'flight_index' variables are within valid range if taking flight
+                for i in range(n):
+                    s.assert_and_track(Implies(variables['flight'][i], And(variables['flight_index'][i] >= 0,variables['flight_index'][i] < len(flight_i_price_list))), f'valid flight index for leg {i}')
+                    s.assert_and_track(Implies(Not(variables['flight'][i]), variables['flight_index'][i] == -1), f'valid flight index for leg {i}')

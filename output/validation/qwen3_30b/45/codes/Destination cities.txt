@@ -1,0 +1,21 @@
+# We are to cover 3 cities in Colorado. We will select 3 distinct cities from the list of cities in Colorado.
+# Set cities to be a list of 3 cities chosen from the cities in Colorado.
+cities = CitySearch.run('Colorado', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+# Take the first 3 cities (assuming at least 3 are available)
+cities = cities[:3]
+# Loop through cities for 3 destination cities (all distinct permutations)
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            # Check that all indices are distinct
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                # Initialize Z3 solver s
+                s = Optimize()
+                # Set 'city' variable to be a list of 3 indexes (for the three days)
+                variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+                # Assert the city indices
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')

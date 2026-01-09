@@ -1,0 +1,17 @@
+# Run NebraskaAccommodationSearch function to get accommodation info for each city  
+                accommodation_info, accommodation_constraints = NebraskaAccommodationSearch.run_for_all_cities(cities, [city_0, city_1, city_2]) 
+                # Set 'accommodation_index' variables for 3 accommodations (1 per city)  
+                variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(3)] 
+                # For each accommodation, assert it is in the correct city and meets budget constraints  
+                for i, variable in enumerate(variables['accommodation_index']): 
+                    accommodation_price_list, accommodation_list_length = NebraskaAccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price') 
+                    s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for city {variables["city"][i]}') 
+                    # Calculate cost and ensure it meets budget constraints  
+                    num_nights = variables['departure_dates'][i+1] - variables['departure_dates'][i] 
+                    price_per_night = NebraskaAccommodationSearch.get_info_for_index(accommodation_price_list, variable) 
+                    total_cost = num_nights * price_per_night 
+                    s.assert_and_track(total_cost <= budget, f'budget constraint for accommodation {variable}') 
+                # Ensure private room availability  
+                for i, city in enumerate(variables['city']): 
+                    accommodation_room_types_list, _ = NebraskaAccommodationSearch.get_info(accommodation_constraints, city, 'Room_types') 
+                    s.assert_and_track(AccommodationSearch.check_exists('Private room', accommodation_room_types_list, variables['accommodation_index'][i]), f'private room available in {city}')

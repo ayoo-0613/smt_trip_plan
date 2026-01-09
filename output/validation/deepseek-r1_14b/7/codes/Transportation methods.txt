@@ -1,0 +1,10 @@
+variables['flight'] = [Bool('flight_travel_0')]
+    variables['self-driving'] = [Bool('self-driving_travel_0')]
+    variables['taxi'] = [Bool('taxi_travel_0')]
+    # Assert only one of flight, self-driving, or taxi is used for 1 transportation between cities
+    s.assert_and_track(Or(variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]), 'either flight, self-driving, or taxi for the single transportation')
+    s.assert_and_track(Not(And(variables['flight'][0], variables['self-driving'][0])), 'flight and self-driving cannot both be used')
+    s.assert_and_track(Not(And(variables['flight'][0], variables['taxi'][0])), 'flight and taxi cannot both be used')
+    s.assert_and_track(Not(And(variables['self-driving'][0], variables['taxi'][0])), 'self-driving and taxi cannot both be used')
+    # Assert all 1 transportations between cities are flight
+    s.assert_and_track(variables['flight'][0], 'only flight is allowed for transportation')

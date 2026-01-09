@@ -1,0 +1,8 @@
+# For each date, check if current city is Los Angeles
+    for date_index in range(5):
+        # If current city is Los Angeles
+        If(city_list[date_index] == 'Los Angeles'):
+            # Assert that at least one restaurant is available in Los Angeles for this date
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 0] == 'Los Angeles', '.restaurant availability in LA b')
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 1] == 'Los Angeles', 'restaurant availability in LA l')
+            s.assert_and_track(variables['restaurant_in_which_city'][date_index * 3 + 2] == 'Los Angeles', 'restaurant availability in LA d')

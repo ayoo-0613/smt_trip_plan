@@ -1,0 +1,17 @@
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(6)]
+                variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(6)]
+                variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(6)]
+                
+                # Assert only one transportation method per transportation
+                for i in range(6):
+                    s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), f'Either flight, self-driving, or taxi for transportation {i+1}')
+                    s.assert_and_track(Not(And(variables['flight'][i], variables['self-driving'][i])), f'Cannot use both flight and self-driving for transportation {i+1}')
+                    s.assert_and_track(Not(And(variables['flight'][i], variables['taxi'][i])), f'Cannot use both flight and taxi for transportation {i+1}')
+                    s.assert_and_track(Not(And(variables['self-driving'][i], variables['taxi'][i])), f'Cannot use both self-driving and taxi for transportation {i+1}')
+                
+                # Assert no self-driving if any other method is used
+                s.assert_and_track(Implies(Or(*variables['flight']), Not(Or(*variables['self-driving']))), 'No self-driving if any flight is used')
+                s.assert_and_track(Implies(Or(*variables['taxi']), Not(Or(*variables['self-driving']))), 'No self-driving if any taxi is used')
+                
+                # Assert all 6 transportations are valid and within budget
+                s.assert_and_track(And(*[Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]) for i in range(6)]), 'All transportations must be valid')

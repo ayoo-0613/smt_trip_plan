@@ -1,0 +1,37 @@
+# Run Distance Search for all cities starting from Columbus
+                driving_info = DistanceSearch.run_for_all_cities('Columbus', cities, [variables['city'][i] for i in range(6)])
+                
+                # Get distance information for each transportation option
+                driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][0], 'Distance')
+                driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][1], 'Distance')
+                driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][2], 'Distance')
+                driving_3_distance, driving_3_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][3], 'Distance')
+                driving_4_distance, driving_4_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][4], 'Distance')
+                driving_5_distance, driving_5_length = DistanceSearch.get_info(driving_info, 'Columbus', variables['city'][5], 'Distance')
+                
+                # Assert that if self-driving or taxi is used, the trip must be valid
+                s.assert_and_track(Implies(Or(variables['self-driving'][0], variables['taxi'][0]), driving_0_length > 0), 'Transportation 0 must be valid')
+                s.assert_and_track(Implies(Or(variables['self-driving'][1], variables['taxi'][1]), driving_1_length > 0), 'Transportation 1 must be valid')
+                s.assert_and_track(Implies(Or(variables['self-driving'][2], variables['taxi'][2]), driving_2_length > 0), 'Transportation 2 must be valid')
+                s.assert_and_track(Implies(Or(variables['self-driving'][3], variables['taxi'][3]), driving_3_length > 0), 'Transportation 3 must be valid')
+                s.assert_and_track(Implies(Or(variables['self-driving'][4], variables['taxi'][4]), driving_4_length > 0), 'Transportation 4 must be valid')
+                s.assert_and_track(Implies(Or(variables['self-driving'][5], variables['taxi'][5]), driving_5_length > 0), 'Transportation 5 must be valid')
+                
+                # Calculate costs for each transportation option
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(1 / 5)
+                taxi_0_price = driving_0_distance * math.ceil(1 / 4)
+                
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(1 / 5)
+                taxi_1_price = driving_1_distance * math.ceil(1 / 4)
+                
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(1 / 5)
+                taxi_2_price = driving_2_distance * math.ceil(1 / 4)
+                
+                self_driving_3_price = 0.05 * driving_3_distance * math.ceil(1 / 5)
+                taxi_3_price = driving_3_distance * math.ceil(1 / 4)
+                
+                self_driving_4_price = 0.05 * driving_4_distance * math.ceil(1 / 5)
+                taxi_4_price = driving_4_distance * math.ceil(1 / 4)
+                
+                self_driving_5_price = 0.05 * driving_5_distance * math.ceil(1 / 5)
+                taxi_5_price = driving_5_distance * math.ceil(1 / 4)

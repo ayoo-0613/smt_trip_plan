@@ -1,0 +1,1 @@
+{"org": "Washington", "dest": "California", "days": 5, "visiting_city_number": 2, "date": ["2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17", "2022-03-18"], "people_number": 2, "local_constraint": {"house rule": "visitors", "cuisine": ["Chinese", "Mexican", "American", "Italian"], "room type": "not shared room", "transportation": null}, "budget": 4600}

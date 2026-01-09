@@ -1,0 +1,11 @@
+########## Flight response##########
+                # Set 'flight_index' variable for 3 transportations
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(3)]
+                # Assert flight index constraints: valid if taking flight, -1 otherwise
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0, variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'not taking flight 0 implies index -1')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0, variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(Not(variables['flight'][1]), variables['flight_index'][1] == -1), 'not taking flight 1 implies index -1')
+                s.assert_and_track(Implies(variables['flight'][2], And(variables['flight_index'][2] >= 0, variables['flight_index'][2] < flight_2_price_list_length)), 'valid flight index for flight 2')
+                s.assert_and_track(Implies(Not(variables['flight'][2]), variables['flight_index'][2] == -1), 'not taking flight 2 implies index -1')
+                ########## Flight response##########

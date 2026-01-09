@@ -1,0 +1,6 @@
+flight_info = FlightSearch.run_for_all_cities_and_dates('Indianapolis', cities, variables['city'], ["2022-03-07", "2022-03-08", "2022-03-09", "2022-03-10", "2022-03-11", "2022-03-12", "2022-03-13"]) # use flight_info, do not customize
+                flight_price_lists = [FlightSearch.get_info(flight_info, 'Indianapolis', variables['city'][i], variables['departure_dates'][i], 'Price') for i in range(6)]
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(6)]
+                for i in range(6):
+                    s.assert_and_track(Implies(variables['flight'][i], And(variables['flight_index'][i] >= 0, variables['flight_index'][i] < flight_price_lists[i][1])), f'valid flight index for flight {i}')
+                    s.assert_and_track(Implies(Not(variables['flight'][i]), variables['flight_index'][i] == -1), f'valid flight index for flight {i}')

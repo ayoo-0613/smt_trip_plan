@@ -1,0 +1,8 @@
+variables['budget_limit'] = RealVal(7200)
+                spent = 0
+                spent += If(variables['self-driving'][0], self_driving_0_price, 10000)
+                spent += If(variables['self-driving'][1], self_driving_1_price, 10000)
+                spent += If(variables['self-driving'][2], self_driving_2_price, 10000)
+                spent += all_restaurant_price
+                spent += all_accommodation_price
+                s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')

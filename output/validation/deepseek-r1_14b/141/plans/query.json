@@ -1,0 +1,1 @@
+{"org": "Las Vegas", "dest": "Texas", "days": 5, "visiting_city_number": 2, "date": ["2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17"], "people_number": 2, "local_constraint": {"house rule": "pets", "cuisine": ["American", "Indian", "Mediterranean", "Mexican"], "room type": "not shared room", "transportation": null}, "budget": 3700}

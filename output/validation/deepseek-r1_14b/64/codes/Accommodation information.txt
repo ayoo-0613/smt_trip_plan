@@ -1,0 +1,15 @@
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0]) 
+    variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(1)]
+    for i, variable in enumerate(variables['accommodation_index']):
+        accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+        s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), 'valid accomodation index')
+        accommodation_maximum_occupancy_list, _ = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Maximum_occupancy')
+        num_room = convert_to_int(RealVal(7) / AccommodationSearch.get_info_for_index(accommodation_maximum_occupancy_list, variable))
+        all_accommodation_price += (variables['departure_dates'][i+1] - variables['departure_dates'][i]) * num_room * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+    for index, city in enumerate(variables['city']):
+        accommodation_minimum_nights_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Minimum_nights')
+        minimum_night = AccommodationSearch.get_info_for_index(accommodation_minimum_nights_list, variables['accommodation_index'][index])
+        s.assert_and_track(minimum_night <= variables['departure_dates'][index+1]- variables['departure_dates'][index], 'minimum nights satisfied')
+    for i, variable in enumerate(variables['accommodation_index']):
+            accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+            s.assert_and_track(AccommodationSearch.check_exists('Entire home/apt', accommodation_room_types_list, variable) == True,  'Entire home/apt' + 'types accomadation visited')

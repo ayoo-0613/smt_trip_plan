@@ -1,0 +1,2 @@
+# Set cities to be a list includes "Washington" only
+cities = ['Washington']

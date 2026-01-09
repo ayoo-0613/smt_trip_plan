@@ -1,0 +1,33 @@
+# Import required libraries
+            from constraint import *
+            
+            # Initialize problem
+            problem = Problem()
+            
+            # Define variables for each flight segment
+            flight_vars = []
+            for i in range(4):
+                # Assuming we have four flight segments: Cleveland -> Florida1, Florida1->Florida2, etc.
+                origin = f"City_{i}"
+                destination = f"City_{(i+1)%4}"  # Loops back to start after last city
+                price_list = [100 + i*10, 150 + i*10, 200 + i*10]  # Example prices for illustration
+                
+                flight_var = problem.addVariable(f"Flight_{i+1}", price_list)
+                flight_vars.append(flight_var)
+            
+            # Define constraints
+            def total_cost_constraint(variables, values):
+                total = sum(values)
+                return total <= 500  # Assuming budget is $500
+            
+            problem.addConstraint(total_cost_constraint, flight_vars)
+            
+            # Solve the problem
+            solution = problem.getSolution()
+            
+            if solution:
+                print("A valid travel plan exists within the budget.")
+                for var in flight_vars:
+                    print(f"Flight {var}: ${solution[var]}")
+            else:
+                print("No valid travel plan can be found within the given budget.")

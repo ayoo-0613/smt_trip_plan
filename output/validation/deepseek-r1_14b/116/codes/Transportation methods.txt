@@ -1,0 +1,29 @@
+# Define transportation methods for each of the three transportations
+                transportation_methods = ['flight', 'self-driving', 'taxi']
+                
+                # Create variables for each transportation method and each transportation instance (0, 1, 2)
+                variables = {
+                    'flight': [Bool('flight_' + str(i)) for i in range(3)],
+                    'self-driving': [Bool('self_driving_' + str(i)) for i in range(3)],
+                    'taxi': [Bool('taxi_' + str(i)) for i in range(3)]
+                }
+                
+                # Assert that exactly one transportation method is used per transportation instance
+                for i in range(3):
+                    s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), 
+                                      f'Exactly one transportation method must be used for transportation {i}')
+                    
+                # Assert that no two transportation methods are used simultaneously for the same transportation instance
+                for i in range(3):
+                    s.assert_and_track(Not(variables['flight'][i] & variables['self-driving'][i]),
+                                       f'Cannot use both flight and self-driving for transportation {i}')
+                    s.assert_and_track(Not(variables['flight'][i] & variables['taxi'][i]),
+                                       f'Cannot use both flight and taxi for transportation {i}')
+                    s.assert_and_track(Not(variables['self-driving'][i] & variables['taxi'][i]),
+                                       f'Cannot use both self-driving and taxi for transportation {i}')
+                
+                # Assert that if a transportation method is used, it must be available between the cities
+                # For example, if flight is not available between certain cities, add constraints accordingly
+                s.assert_and_track(Not(variables['self-driving'][0]), 'Self-driving not available for first transportation')
+                s.assert_and_track(Not(variables['self-driving'][1]), 'Self-driving not available for second transportation')
+                s.assert_and_track(Not(variables['self-driving'][2]), 'Self-driving not available for third transportation')

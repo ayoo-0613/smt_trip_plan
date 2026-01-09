@@ -1,0 +1,17 @@
+# Run search to get list of cities in New Jersey  
+cities = CitySearch.run('New Jersey', 'New York', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'New York' in cities:
+        cities.remove('New York')
+# Set cities to be a list includes two cities in New Jersey  
+cities = ['Newark', 'Jersey City']
+# Loop through cities for 2 destination cities  
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        # Initialize Z3 solver s
+        s = Optimize()
+        # Set 'city' variable to be indexes of 2 destination cities
+        variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+        # Assert 'city' variables are within valid range
+        if city_0_index != city_1_index:
+            s.assert_and_track(variables['city'][0] == city_0_index,  'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index,  'visit city in cities list')

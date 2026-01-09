@@ -1,0 +1,2 @@
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0]])
+            driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])

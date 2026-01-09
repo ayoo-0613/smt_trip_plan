@@ -1,0 +1,34 @@
+# Run DistanceSearch to get driving info for Medford as origin and each Colorado city (City A, City B, City C)
+                driving_info = DistanceSearch.run_for_all_cities('Medford', cities, ['City A', 'City B', 'City C'])  # use driving_info, do not customize
+                
+                # Get specific driving distance info with Medford as origin and final destination, specific city, and departure date for 6 transportations
+                driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Medford', 'City A', 'Distance')
+                driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, 'Medford', 'City B', 'Distance')
+                driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, 'Medford', 'City C', 'Distance')
+                driving_3_distance, driving_3_length = DistanceSearch.get_info(driving_info, 'City A', 'Medford', 'Distance')
+                driving_4_distance, driving_4_length = DistanceSearch.get_info(driving_info, 'City B', 'Medford', 'Distance')
+                driving_5_distance, driving_5_length = DistanceSearch.get_info(driving_info, 'City C', 'Medford', 'Distance')
+                
+                # Assert driving info is not empty if driving
+                s.assert_and_track(Implies(Or(variables['self-driving'][0], variables['taxi'][0]), driving_0_length > 0), 'driving is possible for transportation 0')
+                s.assert_and_track(Implies(Or(variables['self-driving'][1], variables['taxi'][1]), driving_1_length > 0), 'driving is possible for transportation 1')
+                s.assert_and_track(Implies(Or(variables['self-driving'][2], variables['taxi'][2]), driving_2_length > 0), 'driving is possible for transportation 2')
+                s.assert_and_track(Implies(Or(variables['self-driving'][3], variables['taxi'][3]), driving_3_length > 0), 'driving is possible for transportation 3')
+                s.assert_and_track(Implies(Or(variables['self-driving'][4], variables['taxi'][4]), driving_4_length > 0), 'driving is possible for transportation 4')
+                s.assert_and_track(Implies(Or(variables['self-driving'][5], variables['taxi'][5]), driving_5_length > 0), 'driving is possible for transportation 5')
+                
+                # Calculate self-driving price for 1 person and 6 transportations based on driving distance
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(1 / 5)
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(1 / 5)
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(1 / 5)
+                self_driving_3_price = 0.05 * driving_3_distance * math.ceil(1 / 5)
+                self_driving_4_price = 0.05 * driving_4_distance * math.ceil(1 / 5)
+                self_driving_5_price = 0.05 * driving_5_distance * math.ceil(1 / 5)
+                
+                # Get driving arrival time with Medford as origin and final destination, specific city, and departure date for 6 transportations
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Medford', 'City A', 'Duration')
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, 'Medford', 'City B', 'Duration')
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, 'Medford', 'City C', 'Duration')
+                driving_3_arrtime, _ = DistanceSearch.get_info(driving_info, 'City A', 'Medford', 'Duration')
+                driving_4_arrtime, _ = DistanceSearch.get_info(driving_info, 'City B', 'Medford', 'Duration')
+                driving_5_arrtime, _ = DistanceSearch.get_info(driving_info, 'City C', 'Medford', 'Duration')

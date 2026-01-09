@@ -1,0 +1,22 @@
+# Run DistanceSearch to get driving info for West Palm Beach as origin and city_0 (Atlanta) for both legs
+    driving_info = DistanceSearch.run_for_all_cities('West Palm Beach', cities, [city_0])  # use driving_info, do not customize
+    driving_info = DistanceSearch.run_for_all_cities('Atlanta', cities, ['St. Petersburg'])  # use driving_info, do not customize
+    
+    # Get specific driving distance info with West Palm Beach as origin and Atlanta as destination, and vice versa, for departure dates
+    wpb_to_atl_distance, wpb_to_atl_duration = DistanceSearch.get_info(driving_info, 'West Palm Beach', variables['city'][0], 'Distance')
+    atl_to_wpb_distance, atl_to_wpb_duration = DistanceSearch.get_info(driving_info, variables['city'][0], 'West Palm Beach', 'Distance')
+    
+    # Assert driving info is not empty if driving
+    s.assert_and_track(Implies(Or(variables['self-driving'][0], variables['taxi'][0]), wpb_to_atl_distance > 0), 'driving is possible for transportation 0')
+    s.assert_and_track(Implies(Or(variables['self-driving'][1], variables['taxi'][1]), atl_to_wpb_distance > 0), 'driving is possible for transportation 1')
+    
+    # Calculate self-driving and taxi price for 1 person and 2 transportations based on driving distance
+    self_driving_0_price = 0.05 * wpb_to_atl_distance * math.ceil(1 / 5)
+    taxi_0_price = wpb_to_atl_distance * math.ceil(1 / 4)
+    
+    self_driving_1_price = 0.05 * atl_to_wpb_distance * math.ceil(1 / 5)
+    taxi_1_price = atl_to_wpb_distance * math.ceil(1 / 4)
+    
+    # Get driving arrival time with West Palm Beach as origin and Atlanta as destination, and vice versa, for specific dates
+    wpb_to_atl_arrtime, _ = DistanceSearch.get_info(driving_info, 'West Palm Beach', variables['city'][0], 'Duration')
+    atl_to_wpb_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'West Palm Beach', 'Duration')

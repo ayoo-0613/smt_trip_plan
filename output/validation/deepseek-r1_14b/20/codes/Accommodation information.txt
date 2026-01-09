@@ -1,0 +1,4 @@
+# For each 'accommodation_index', get specific room type info and assert 'Private room' exist for all accommodations
+    for i, variable in enumerate(variables['accommodation_index']):
+        accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+        s.assert_and_track(AccommodationSearch.check_exists('Private room', accommodation_room_types_list, variable) == True,  'Private room' + 'types accomadation visited')

@@ -1,0 +1,3 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_0'), Int('departure_dates_transportation_1')]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation on day 0')
+            s.assert_and_track(variables['departure_dates'][1] == 4, 'second transportation on day 4')

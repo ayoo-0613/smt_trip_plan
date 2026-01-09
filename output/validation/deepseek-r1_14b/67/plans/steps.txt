@@ -1,0 +1,85 @@
+<think>
+Okay, so I need to figure out how to create a detailed step-by-step instruction based on the given natural language query about creating a travel itinerary. The user provided some examples, and I should follow those structures closely.
+
+First, let me parse the query carefully. The user is asking for a 3-day trip from Baton Rouge to Dallas, starting March 25th to March 27th, 2022, with four people. They have a budget of $5,500 and require accommodations that allow smoking.
+
+Looking at the examples, each step starts with a '#' and follows a specific structure for different aspects like destination cities, departure dates, transportation methods, etc. I need to make sure each part is addressed in order.
+
+Starting with destination cities: Since it's a direct trip from Baton Rouge to Dallas, the only destination city is Dallas. So, I'll set that as a list and loop through it.
+
+Next, departure dates: There are two transportations (departure and arrival), so I need to set variables for those and ensure they happen on the correct days.
+
+Transportation methods: The user doesn't want flights, so we're limited to self-driving or taxi. I'll set variables for each transportation method and ensure only these options are used.
+
+Flight information isn't needed here since they don't want flights, but driving info is essential. I'll run a search for the distance between Baton Rouge and Dallas, calculate costs for self-driving and taxi based on that distance, and get arrival times.
+
+For restaurants, considering three days with four people, we need to plan nine meals. I'll search for restaurants in Dallas that fit within the budget and cuisine preferences, ensuring each meal's location is either current or next city based on transportation times.
+
+Attractions: Three days mean three attractions. I'll search for nearby attractions in Dallas and assign them accordingly, making sure they're visited only once per city.
+
+Accommodation: Since it's a 3-day trip, we need one place to stay each night. I'll search for accommodations in Dallas that allow smoking, fit the budget, and meet other requirements like room type.
+
+Budgeting is crucial. I'll sum up transportation, restaurant, attraction, and accommodation costs and ensure they don't exceed $5,500.
+
+I should follow each example's structure precisely, starting each section with a '#', and make sure all variables are correctly set and constraints are applied. Also, I need to remember the specific requirements like smoking permits in accommodations.
+
+Let me outline each step methodically, ensuring nothing is missed and everything aligns with the examples provided.
+</think>
+
+# Destination cities #  
+# Set cities to be a list includes Dallas only  
+# Loop through cities for 1 destination cities  
+# Initialize Z3 solver s  
+# Set 'city' variable to be indexes of 1 destination cities  
+# Assert 'city' variable equal to city index  
+
+# Departure dates #  
+# Set 'departure_dates' variables for 2 transportations between cities  
+# Assert first transportation happens at first day (day 0), last transportation happens at last day (day 2)  
+
+# Transportation methods #  
+# Set transportation method (flight, self-driving, taxi) variable for 2 transportations between cities  
+# Assert only one of flight, self-driving, or taxi is used for 2 transportations between cities  
+# Assert all 2 transportations between cities are not flight  
+
+# Flight information #  
+# Run FlightSearch to get flight info for Baton Rouge as origin, list of cities, city_0, and dates ["2022-03-25", "2022-03-26", "2022-03-27"]  
+# Get specific flight price info with Baton Rouge as origin and final destination, specific city, and departure date for 2 transportations  
+# Set 'flight_index' variable for 2 transportations  
+# Assert 2 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight  
+
+# Driving information #  
+# Run DistanceSearch to get driving info for Baton Rouge as origin and city_0  
+# Get specific driving distance info with Baton Rouge as origin and final destination, specific city, and departure date for 2 transportations  
+# Assert driving info is not empty if driving  
+# Calculate self-driving and taxi price for 4 people and 2 transportations based on driving distance  
+# Get driving arrival time with Baton Rouge as origin and final destination, specific city, and departure date for 2 transportations  
+
+# Restaurant information #  
+# Get arrivals and city list for each day based on 2 transportations, 3 total travel day, and departure dates variables  
+# Run RestaurantSearch to get restaurant price info and cuisine info for city_0  
+# Set 'restaurant_in_which_city' variables for 12 (3 meals per day, 4 people) meals  
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'restaurant_index' variables for 12 (3 meals per day, 4 people) meals  
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, assert restaurants in same city are not repeated, and calculate restaurant price for 4 people  
+
+# Attraction information #  
+# Run AttractionSearch to get attraction info for city_0  
+# Set 'attraction_in_which_city' variables for 3 (1 per day) attractions  
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'attraction_index' variables for 3 (1 per day) attractions  
+# For each 'attraction_index', get specific length info based on attraction in which city variable, assert index are within valid range, and attrations in same city are not repeated  
+
+# Accommodation information #  
+# Run AccommodationSearch to get accommodation info and accommodation constraints for city_0  
+# Set 'accommodation_index' variables for 1 (1 per city) accommodations  
+# For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 4 people and accommodation price  
+# For each city, get accommodation minimum night info and assert it to be less than the days stay in this city  
+# For each 'accommodation_index', get specific room type and house rules info, assert 'No smoking' does not exist for all accommodations  
+
+# Budget #  
+# Set budget limit variable to be 5500  
+# Add 2 transportation price to spent, according to whether transportation method is flight, self-driving, or taxi  
+# Add restaurant price to spent  
+# Add accommodation price to spent  
+# Assert current spent is within budget

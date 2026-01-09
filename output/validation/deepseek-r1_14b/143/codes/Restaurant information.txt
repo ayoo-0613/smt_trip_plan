@@ -1,0 +1,33 @@
+# Get arrivals and city list for each day based on transportations, 5 travel days, and departure dates variables
+            transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+            transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+            transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+            arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            
+            # Filter cities to include only Florida cities
+            florida_cities = [city for city in city_list if city.state == 'Florida']
+            
+            # Run RestaurantSearch to get restaurant price info and cuisine info for American cuisine in both Florida cities
+            american_restaurant_price, american_restaurant_cuisines = RestaurantSearch.run_for_all_cities(variables['restaurant'], florida_cities)
+            
+            # Set 'restaurant_in_which_city' variables for 30 (3 meals per day * 10 people) meals
+            variables['restaurant_in_which_city'] = [Int('restaurant_' + str(i)) for i in range(3*10)]
+            
+            # For each 'restaurant_index', ensure index are within valid range and calculate total restaurant costs
+            all_restaurant_price = 0
+            for i, variable in enumerate(variables['restaurant_index']):
+                # Get restaurant price info based on city
+                restaurant_city = variables['restaurant_in_which_city'][i]
+                restaurant_price_list, restaurant_list_length = RestaurantSearch.get_info(american_restaurant_price, restaurant_city, 'Price')
+                
+                # Assert valid index range
+                s.assert_and_track(Implies(variables['restaurant_in_which_city'][i] != -1, And(variable >= 0, variable < restaurant_list_length)), 'valid restaurant index')
+                s.assert_and_track(Implies(variables['restaurant_in_which_city'][i] == -1, variable == -1), 'valid restaurant index')
+                
+                # Calculate restaurant price for each person
+                all_restaurant_price += If(variables['restaurant_in_which_city'][i] != -1, 
+                                           RestaurantSearch.get_info_for_index(restaurant_price_list, variable) * 2, 0)
+            
+            # Assert total restaurant cost constraint
+            s.assert_and_track(all_restaurant_price <= variables['budget'], 'total restaurant cost')

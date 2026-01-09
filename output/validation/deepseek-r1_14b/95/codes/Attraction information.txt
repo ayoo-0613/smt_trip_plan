@@ -1,0 +1,29 @@
+from sympy import Int
+            from attraction_search import AttractionSearch
+            
+            # Run AttractionSearch to get attraction info for both cities in New York
+            attraction_info_single = AttractionSearch.run_for_all_cities(cities, [0])  # city_0 (New York)
+            attraction_info_both = AttractionSearch.run_for_all_cities(cities, [0, 1])  # both cities
+            
+            # Set 'attraction_in_which_city' variables for 5 attractions
+            variables['attraction_in_which_city'] = [Int('attraction_in_which_city_{}'.format(i)) for i in range(5)]
+            
+            # For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+            for i, var in enumerate(variables['attraction_in_which_city']):
+                s.assert_and_track(var == If(arrives[i] > 18, cities[0], cities[1]), 'attraction location')
+            
+            # Set 'attraction_index' variables for 5 attractions
+            variables['attraction_index'] = [Int('attraction_index_{}'.format(i)) for i in range(5)]
+            
+            # For each 'attraction_index', get specific length info based on attraction in which city variable, assert index are within valid range, and attractions in same city are not repeated
+            for i, var in enumerate(variables['attraction_index']):
+                # Get attraction list length based on location
+                attraction_list_length = AttractionSearch.get_info(attraction_info_both, variables['attraction_in_which_city'][i])
+                
+                # Assert valid index range
+                s.assert_and_track(Implies(variables['attraction_in_which_city'][i] != -1, And(var >= 0, var < attraction_list_length)), 'valid attraction index')
+                s.assert_and_track(Implies(variables['attraction_in_which_city'][i] == -1, var == -1), 'valid attraction index')
+                
+                # Ensure attractions in same city are unique
+                for j in range(i-1, -1, -1):
+                    s.assert_and_track(Implies(And(variables['attraction_in_which_city'][i] != -1, variables['attraction_in_which_city'][i] == variables['attraction_in_which_city'][j]), var != variables['attraction_index'][j]), 'unique attraction index')

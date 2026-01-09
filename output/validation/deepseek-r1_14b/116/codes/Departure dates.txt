@@ -1,0 +1,3 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(3)]
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation departs on day 0')
+                s.assert_and_track(variables['departure_dates'][2] == 6, 'last transportation arrives on day 6')

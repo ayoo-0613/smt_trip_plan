@@ -1,0 +1,4 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_0'), Int('departure_dates_transportation_1')]
+            # Assert first transportation happens at first day (day 0), last transportation happens at last day (day 4)
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 4, 'travel end date')

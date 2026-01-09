@@ -1,0 +1,29 @@
+<think>
+Alright, let's tackle this query step by step. The user has provided a text and wants me to extract information into JSON format following specific guidelines. First, I'll read through the example they gave to understand how it's structured.
+
+In Example 1, the JSON includes "org" as departure city, "dest" as destination, "days", "visiting_city_number", dates, people number, local constraints, and budget. The local constraints have four possible options: house rule, cuisine, room type, transportation. Each can be null if not mentioned.
+
+Looking at the user's text, it starts with a 3-day trip from Los Angeles to Detroit, so org is LA and dest is Detroit. Days are 3, so visiting_city_number should be 1 since days don't exceed 3. Dates are March 18th to 20th, which I'll format as ["2022-03-18", "2022-03-19", "2022-03-20"]. People number is 2.
+
+Next, local constraints: they mention allowing visitors, so house rule should be "visitors". For cuisine, they want Chinese, Indian, Mexican, and Italian. Room type isn't specified, but they prefer not to self-drive, so transportation is "no self-driving".
+
+Budget is $2000. I'll make sure all fields are filled, setting null where info isn't provided. Let me structure this into JSON accordingly.
+</think>
+
+```json
+{
+    "org": "Los Angeles", 
+    "dest": "Detroit", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-18", "2022-03-19", "2022-03-20"], 
+    "people_number": 2, 
+    "local_constraint": {
+        "house rule": "visitors", 
+        "cuisine": ["Chinese", "Indian", "Mexican", "Italian"], 
+        "room type": null, 
+        "transportation": "no self-driving"
+    }, 
+    "budget": 2000
+}
+```

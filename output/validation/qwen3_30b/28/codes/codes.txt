@@ -1,0 +1,10 @@
+cities = CitySearch.run('Virginia', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')

@@ -1,0 +1,11 @@
+# Set 'departure_dates' variables for 3 transportations between cities
+                variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(3)]
+                # Assert first transportation happens on or after March 7th (day 0)
+                s.assert_and_track(variables['departure_dates'][0] >= 0, 'first transportation after March 7th')
+                # Assert last transportation happens on or before March 13th (day 6)
+                s.assert_and_track(variables['departure_dates'][2] <= 6, 'last transportation before March 13th')
+                # Assert departure dates are in order and within the date range
+                s.assert_and_track(And(
+                    variables['departure_dates'][0] < variables['departure_dates'][1],
+                    variables['departure_dates'][1] < variables['departure_dates'][2]
+                ), 'valid departure date sequence')

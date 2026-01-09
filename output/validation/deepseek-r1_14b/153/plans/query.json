@@ -1,0 +1,1 @@
+{"org": "Boston", "dest": "North Carolina", "days": 5, "visiting_city_number": 2, "date": ["2022-03-02", "2022-03-03", "2022-03-04", "2022-03-05", "2022-03-06"], "people_number": 4, "local_constraint": {"house rule": "visitors", "cuisine": null, "room type": "entire room", "transportation": "no self-driving"}, "budget": 8800}

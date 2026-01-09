@@ -1,0 +1,13 @@
+# Set budget limit variable to be 6500  
+                variables['budget_limit'] = RealVal(6500)
+                # Add transportation costs based on driving or taxi prices  
+                spent = 0
+                spent += If(variables['self-driving'][0], self_driving_0_price, taxi_0_price)
+                spent += If(variables['self-driving'][1], self_driving_1_price, taxi_1_price)
+                spent += If(variables['self-driving'][2], self_driving_2_price, taxi_2_price)
+                # Add restaurant prices for all meals  
+                spent += all_restaurant_price
+                # Add accommodation prices for all nights  
+                spent += all_accommodation_price
+                # Assert total spent is within the $6500 budget
+                s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')

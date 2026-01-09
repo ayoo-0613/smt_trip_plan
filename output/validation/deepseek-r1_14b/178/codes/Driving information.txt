@@ -1,0 +1,21 @@
+# Run DistanceSearch to get driving info for Key West as origin and each city in Texas  
+                driving_info = DistanceSearch.run_for_all_cities('Key West', cities, texas_cities)  # use driving_info, do not customize  
+                
+                # Get specific driving distance info for each leg of the trip  
+                for i in range(4):  # For 4 transportations
+                    driving_i_distance, driving_i_length = DistanceSearch.get_info(driving_info, variables['city'][i], variables['city'][(i+1)%4], 'Distance')  
+                
+                # Calculate self-driving and taxi price for 2 people and 4 transportations based on distance  
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)  
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)  
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(2 / 5)  
+                self_driving_3_price = 0.05 * driving_3_distance * math.ceil(2 / 5)  
+                
+                taxi_0_price = driving_0_distance * math.ceil(2 / 4)  
+                taxi_1_price = driving_1_distance * math.ceil(2 / 4)  
+                taxi_2_price = driving_2_distance * math.ceil(2 / 4)  
+                taxi_3_price = driving_3_distance * math.ceil(2 / 4)  
+                
+                # Get driving arrival time for each leg  
+                for i in range(4):  # For 4 transportations
+                    driving_i_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][i], variables['city'][(i+1)%4], 'Duration')

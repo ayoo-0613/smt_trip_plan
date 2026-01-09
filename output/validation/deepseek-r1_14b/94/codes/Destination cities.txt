@@ -1,0 +1,6 @@
+cities = ['Austin', 'Houston']
+for city_pair in [[0, 1]]:
+    s = Optimize()
+    variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+    s.assert_and_track(variables['city'][0] == city_pair[0], 'visit city in cities list')
+    s.assert_and_track(variables['city'][1] == city_pair[1], 'visit city in cities list')

@@ -1,0 +1,14 @@
+# Set transportation method variable (flight, self-driving, taxi) for 3 transportations between cities
+                variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(3)]
+                variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(3)]
+                variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(3)]
+                
+                # Assert only one of flight, self-driving, or taxi is used for all transportations between cities
+                s.assert_and_track(ExactlyOne([variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]]), 'exactly one transportation method for first leg')
+                s.assert_and_track(ExactlyOne([variables['flight'][1], variables['self-driving'][1], variables['taxi'][1]]), 'exactly one transportation method for second leg')
+                s.assert_and_track(ExactlyOne([variables['flight'][2], variables['self-driving'][2], variables['taxi'][2]]), 'exactly one transportation method for third leg')
+                
+                # Assert all transportation legs are not flight
+                s.assert_and_track(Not(variables['flight'][0]), 'no flight for first transportation')
+                s.assert_and_track(Not(variables['flight'][1]), 'no flight for second transportation')
+                s.assert_and_track(Not(variables['flight'][2]), 'no flight for third transportation')

@@ -1,0 +1,7 @@
+# Run DistanceSearch to get driving info between Richmond and the two Texas cities
+            driving_info = DistanceSearch.run_for_all_cities('Richmond', cities, [city_0, city_1])  # use driving_info, do not customize
+            # Calculate self-driving and taxi prices for 2 people based on distance
+            self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)
+            self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)
+            taxi_0_price = driving_0_distance * math.ceil(2 / 4)
+            taxi_1_price = driving_1_distance * math.ceil(2 / 4)

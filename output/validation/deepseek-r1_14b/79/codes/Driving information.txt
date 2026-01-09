@@ -1,0 +1,8 @@
+# Calculate distance from Eugene to Los Angeles
+    driving_info = DistanceSearch.run_for_all_cities('Eugene', cities, [variables['city'][0]])
+    distance_eugene_la, _ = DistanceSearch.get_info(driving_info, 'Eugene', variables['city'][0], 'Distance')
+    arr_time_eugene_la, _ = DistanceSearch.get_info(driving_info, 'Eugene', variables['city'][0], 'Duration')
+    
+    # Set driving cost based on mileage or actual costs
+    self_driving_price = 0.05 * distance_eugene_la * math.ceil(3 / 5)
+    taxi_price = distance_eugene_la * math.ceil(3 / 4)

@@ -1,0 +1,247 @@
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 4, 'travel end date')
+# Define the transportation variables for 3 trips
+            variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(3)]
+            variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(3)]
+            variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(3)]
+            
+            # Forbid self-driving for all trips
+            for i in range(3):
+                s.assert_and_track(Not(variables['self-driving'][i]), f'no self-driving for trip {i}')
+            
+            # For each trip, exactly one of flight or taxi
+            for i in range(3):
+                s.assert_and_track(Or(variables['flight'][i], variables['taxi'][i]), f'flight or taxi for trip {i}')
+                s.assert_and_track(Not(And(variables['flight'][i], variables['taxi'][i])), f'not both flight and taxi for trip {i}')
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [variables['city'][0]], ["2022-03-16", "2022-03-17", "2022-03-18"])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], ["2022-03-16", "2022-03-17", "2022-03-18"])
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0], variables['city'][1]])
+            driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Charlotte', variables['city'][0], 'Duration')
+            driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration')
+arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities, [city_0, city_1])
+attraction_info = AttractionSearch.run_for_all_cities(cities, [city_0, city_1])
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+variables['budget_limit'] = RealVal(4200)
+            spent = 0
+            spent += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, If(variables['taxi'][0], taxi_0_price, 10000)))
+            spent += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, If(variables['taxi'][1], taxi_1_price, 10000)))
+            spent += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, If(variables['taxi'][2], taxi_2_price, 10000)))
+            spent += all_restaurant_price
+            spent += all_accommodation_price
+            s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] >= 0, 'first leg departure >= March 6')
+            s.assert_and_track(variables['departure_dates'][0] < 4, 'first leg departure < March 10')
+            s.assert_and_track(variables['departure_dates'][1] > variables['departure_dates'][0], 'second leg after first')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] < variables['departure_dates'][1], 'valid travel date')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 1, 'travel end date')
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(3)]
+            variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(3)]
+            variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(3)]
+            for i in range(3):
+                s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), 
+                                  f'either flight, self-driving, or taxi for leg {i}')
+                s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), 
+                                         And(variables['flight'][i], variables['taxi'][i]), 
+                                         And(variables['taxi'][i], variables['self-driving'][i]))),
+                                  f'flight, self-driving, and taxi not simultaneously for leg {i}')
+            for i in range(3):
+                s.assert_and_track(Not(variables['self-driving'][i]), 
+                                  f'no self-driving for leg {i}')
+s.assert_and_track(Not(variables['self-driving'][0]), 'no self-driving for first transportation')
+            s.assert_and_track(Not(variables['self-driving'][1]), 'no self-driving for second transportation')
+            s.assert_and_track(Not(variables['self-driving'][2]), 'no self-driving for third transportation')
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [variables['city'][0]], [variables['departure_dates'][0]])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], [variables['departure_dates'][1]])
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0]])
+            driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])
+transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+                    transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+                    transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+                    arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+                    city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+                    restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities, [city_0, city_1])
+attraction_info = AttractionSearch.run_for_all_cities(cities, [city_0, city_1])
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+s.assert_and_track(spent <= 4200, 'budget_4200')
+variables['budget_limit'] = RealVal(4200)
+            total_cost = spent + all_restaurant_price + all_attraction_price + all_accommodation_price
+            s.assert_and_track(total_cost <= variables['budget_limit'], 'budget enough')
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 1, 'travel end date')
+# For each trip, ensure exactly one of flight, self-driving, or taxi is chosen (with self-driving explicitly forbidden later)
+            for i in range(3):
+                s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), 'either flight, self-driving, or taxi for trip ' + str(i))
+                s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), 
+                                         And(variables['flight'][i], variables['taxi'][i]), 
+                                         And(variables['taxi'][i], variables['self-driving'][i]))), 
+                                   'not two methods for trip ' + str(i))
+            
+            # Explicitly forbid self-driving for all trips
+            s.assert_and_track(Not(variables['self-driving'][0]), 'no self-driving for trip 0')
+            s.assert_and_track(Not(variables['self-driving'][1]), 'no self-driving for trip 1')
+            s.assert_and_track(Not(variables['self-driving'][2]), 'no self-driving for trip 2')
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [city_0], [variables['departure_dates'][0]])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], [variables['departure_dates'][1]])
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0]])
+            driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])
+transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+            transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+            transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+            arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities, [city_0, city_1])
+attraction_info = AttractionSearch.run_for_all_cities(cities, [city_0, city_1])
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+variables['budget_limit'] = RealVal(4200)
+            total_cost = 0
+            total_cost += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, If(variables['taxi'][0], taxi_0_price, 10000)))
+            total_cost += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, If(variables['taxi'][1], taxi_1_price, 10000)))
+            total_cost += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, If(variables['taxi'][2], taxi_2_price, 10000)))
+            total_cost += all_restaurant_price
+            total_cost += all_accommodation_price
+            total_cost += all_attraction_price
+            s.assert_and_track(total_cost <= variables['budget_limit'], 'budget enough')
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 1, 'travel end date')
+
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [variables['city'][0]], [variables['departure_dates'][0]])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], [variables['departure_dates'][1]])
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0]])
+            driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])
+# Get arrivals and city list for each day (based on departure_dates and travel times)
+            transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+            transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+            transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+            arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            # Run RestaurantSearch for city[0] and city[1]
+            restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities, [city_0, city_1])
+attraction_info = AttractionSearch.run_for_all_cities(cities, [cities[0], cities[1]])
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+variables['budget_limit'] = RealVal(4200)
+            total_cost = 0
+            total_cost += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, If(variables['taxi'][0], taxi_0_price, 10000)))
+            total_cost += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, If(variables['taxi'][1], taxi_1_price, 10000)))
+            total_cost += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, If(variables['taxi'][2], taxi_2_price, 10000)))
+            total_cost += all_restaurant_price
+            total_cost += all_accommodation_price
+            total_cost += all_attraction_price
+            s.assert_and_track(total_cost <= variables['budget_limit'], 'budget enough')
+cities = CitySearch.run('New Jersey', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in cities:
+    cities.remove('Atlanta')
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        if city_0_index != city_1_index:
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+            s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+            s.assert_and_track(variables['departure_dates'][1] == 1, 'travel end date')
+variables['flight'] = [Bool('flight_travel_' + str(i)) for i in range(3)]
+            variables['self-driving'] = [Bool('self-driving_travel_' + str(i)) for i in range(3)]
+            variables['taxi'] = [Bool('taxi_travel_' + str(i)) for i in range(3)]
+            
+            for i in range(3):
+                s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), 'at least one transportation method for trip ' + str(i))
+                s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), And(variables['flight'][i], variables['taxi'][i]), And(variables['self-driving'][i], variables['taxi'][i]))), 'at most one transportation method for trip ' + str(i))
+            
+            for i in range(3):
+                s.assert_and_track(Not(variables['self-driving'][i]), 'no self-driving for trip ' + str(i))
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [variables['city'][0]], [variables['departure_dates'][0]])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], [variables['departure_dates'][1]])
+driving_info = DistanceSearch.run_for_all_cities('Charlotte', cities, [variables['city'][0]])
+            driving_info = DistanceSearch.run_for_all_cities(variables['city'][0], cities, [variables['city'][1]])
+# Get arrivals and city list for each day (based on departure_dates and travel times)
+            transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+            transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+            transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+            arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            # Run RestaurantSearch for city[0] and city[1]
+            restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities, [city_0, city_1])
+attraction_info = AttractionSearch.run_for_all_cities(cities, [cities[0], cities[1]])
+accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+variables['budget_limit'] = RealVal(4200)
+            spent = 0
+            spent += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, If(variables['taxi'][0], taxi_0_price, 10000)))
+            spent += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, If(variables['taxi'][1], taxi_1_price, 10000)))
+            spent += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, If(variables['taxi'][2], taxi_2_price, 10000)))
+            spent += all_restaurant_price
+            spent += all_attraction_price
+            spent += all_accommodation_price
+            s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')
+            if s.check() == sat:
+                print('ok')
+                plan = generate_as_plan(s, variables, query_json)
+                with open(path+'plans/' + 'plan.txt', 'w') as f:
+                    f.write(plan)
+                f.close()
+                success = True
+                break
+            else:
+                print('not ok')
+                c = s.unsat_core()
+                print(c)
+    if success: break

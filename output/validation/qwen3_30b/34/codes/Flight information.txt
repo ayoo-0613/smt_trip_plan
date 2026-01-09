@@ -1,0 +1,2 @@
+flight_info = FlightSearch.run_for_all_cities_and_dates('Charlotte', cities, [variables['city'][0]], [variables['departure_dates'][0]])
+            flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [variables['city'][1]], [variables['departure_dates'][1]])

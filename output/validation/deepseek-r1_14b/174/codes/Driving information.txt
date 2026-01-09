@@ -1,0 +1,17 @@
+# Run DistanceSearch to get driving info for North Platte as origin and city_0, city_1, city_2
+                driving_info = DistanceSearch.run_for_all_cities('North Platte', cities, [city_0, city_1, city_2])  # use driving_info, do not customize
+                # Get specific driving distance info for each leg of the trip  
+                driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'North Platte', variables['city'][0], 'Distance')
+                driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Distance')
+                driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, variables['city'][1],'North Platte', 'Distance')
+                # Calculate self-driving and taxi price for 2 people based on distance  
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(2 / 5)
+                taxi_0_price = driving_0_distance * math.ceil(2 / 4)
+                taxi_1_price = driving_1_distance * math.ceil(2 / 4)
+                taxi_2_price = driving_2_distance * math.ceil(2 / 4)
+                # Get driving arrival time for each transportation  
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'North Platte', variables['city'][0], 'Duration') # Use driving_0_arrtime, do not customize
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration') # Use driving_1_arrtime, do not customize
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][1],'North Platte', 'Duration') # Use driving_2_arrtime, do not customize

@@ -1,0 +1,18 @@
+# Run AccommodationSearch to get accommodation info and constraints for both cities in Colorado
+            accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+            
+            # Set 'accommodation_index' variables for 2 (1 per city) accommodations
+            variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(2)]
+            
+            # For each 'accommodation_index', get specific price info based on accommodation in which city variable
+            all_accommodation_price = 0
+            for i, variable in enumerate(variables['accommodation_index']):
+                accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+                s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), 'valid accommodation index')
+                all_accommodation_price += (variables['departure_dates'][i+1] - variables['departure_dates'][i]) * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+            
+            # For each city, get accommodation minimum night info and assert it is less than the days stay
+            for index, city in enumerate(variables['city']):
+                accommodation_minimum_nights_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Minimum_nights')
+                minimum_night = AccommodationSearch.get_info_for_index(accommodation_minimum_nights_list, variables['accommodation_index'][index])
+                s.assert_and_track(minimum_night <= variables['departure_dates'][index+1] - variables['departure_dates'][index], 'minimum nights satisfied')

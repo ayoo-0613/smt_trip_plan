@@ -1,0 +1,29 @@
+variables['flight'] = [Bool('flight_' + str(i)) for i in range(4)]
+                variables['self-driving'] = [Bool('self-driving_' + str(i)) for i in range(4)]
+                variables['taxi'] = [Bool('taxi_' + str(i)) for i in range(4)]
+                
+                s.assert_and_track(Or(variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]), 'transportation 1 method')
+                s.assert_and_track(Not(And(Not(variables['flight'][0]), Not(variables['self-driving'][0]), Not(variables['taxi'][0]))), 'transportation 1 must use a method')
+                
+                s.assert_and_track(Or(variables['flight'][1], variables['self-driving'][1], variables['taxi'][1]), 'transportation 2 method')
+                s.assert_and_track(Not(And(Not(variables['flight'][1]), Not(variables['self-driving'][1]), Not(variables['taxi'][1]))), 'transportation 2 must use a method')
+                
+                s.assert_and_track(Or(variables['flight'][2], variables['self-driving'][2], variables['taxi'][2]), 'transportation 3 method')
+                s.assert_and_track(Not(And(Not(variables['flight'][2]), Not(variables['self-driving'][2]), Not(variables['taxi'][2]))), 'transportation 3 must use a method')
+                
+                s.assert_and_track(Or(variables['flight'][3], variables['self-driving'][3], variables['taxi'][3]), 'transportation 4 method')
+                s.assert_and_track(Not(And(Not(variables['flight'][3]), Not(variables['self-driving'][3]), Not(variables['taxi'][3]))), 'transportation 4 must use a method')
+                
+                s.assert_and_track(Implies(variables['flight'][0], Not(variables['self-driving'][0])), 'no self-driving if flight used in transportation 1')
+                s.assert_and_track(Implies(variables['flight'][0], Not(variables['taxi'][0])), 'no taxi if flight used in transportation 1')
+                
+                s.assert_and_track(Implies(variables['self-driving'][0], Not(variables['flight'][0])), 'no flight if self-driving used in transportation 1')
+                s.assert_and_track(Implies(variables['self-driving'][0], Not(variables['taxi'][0])), 'no taxi if self-driving used in transportation 1')
+                
+                s.assert_and_track(Implies(variables['taxi'][0], Not(variables['flight'][0])), 'no flight if taxi used in transportation 1')
+                s.assert_and_track(Implies(variables['taxi'][0], Not(variables['self-driving'][0])), 'no self-driving if taxi used in transportation 1')
+                
+                s.assert_and_track(Not(variables['flight'][0]), 'transportation 1 cannot be flight')
+                s.assert_and_track(Not(variables['flight'][1]), 'transportation 2 cannot be flight')
+                s.assert_and_track(Not(variables['flight'][2]), 'transportation 3 cannot be flight')
+                s.assert_and_track(Not(variables['flight'][3]), 'transportation 4 cannot be flight')

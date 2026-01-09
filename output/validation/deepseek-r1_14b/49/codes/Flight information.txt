@@ -1,0 +1,7 @@
+# Set flight information as Not Applicable since using ground transportation
+                flight_0_price = -1
+                flight_0_arrtime = -1
+                flight_1_price = -1
+                flight_1_arrtime = -1
+                flight_2_price = -1
+                flight_2_arrtime = -1

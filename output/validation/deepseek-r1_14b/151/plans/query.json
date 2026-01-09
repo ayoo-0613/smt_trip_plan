@@ -1,0 +1,1 @@
+{"org": "Washington", "dest": "New York", "days": 5, "visiting_city_number": 2, "date": ["2022-03-23", "2022-03-24", "2022-03-25", "2022-03-26", "2022-03-27"], "people_number": 7, "local_constraint": {"house rule": null, "cuisine": ["American", "Mexican", "Chinese", "Italian"], "room type": "entire room", "transportation": "no self-driving"}, "budget": 9100}

@@ -1,0 +1,25 @@
+# Run DistanceSearch to get driving info for Chattanooga as origin and each city in Georgia  
+                driving_info = DistanceSearch.run_for_all_cities('Chattanooga', cities, [city_0, city_1, city_2, city_3])  # use driving_info, do not customize  
+                
+                # Get specific driving distance info with Chattanooga as origin and final destination, specific city, and departure date for 4 transportations  
+                driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][0], 'Distance')  
+                driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][1], 'Distance')  
+                driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][2], 'Distance')  
+                driving_3_distance, driving_3_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][3], 'Distance')  
+                
+                # Calculate self-driving and taxi price for 2 people and 4 transportations based on driving distance  
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)  
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)  
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(2 / 5)  
+                self_driving_3_price = 0.05 * driving_3_distance * math.ceil(2 / 5)  
+                
+                taxi_0_price = driving_0_distance * math.ceil(2 / 4)  
+                taxi_1_price = driving_1_distance * math.ceil(2 / 4)  
+                taxi_2_price = driving_2_distance * math.ceil(2 / 4)  
+                taxi_3_price = driving_3_distance * math.ceil(2 / 4)  
+                
+                # Get driving arrival time with Chattanooga as origin and final destination, specific city, and departure date for each transportation  
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][0], 'Duration')  # Use driving_0_arrtime, do not customize  
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][1], 'Duration')  # Use driving_1_arrtime, do not customize  
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][2], 'Duration')  # Use driving_2_arrtime, do not customize  
+                driving_3_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][3], 'Duration')  # Use driving_3_arrtime, do not customize

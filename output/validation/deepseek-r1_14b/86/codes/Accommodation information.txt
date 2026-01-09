@@ -1,0 +1,29 @@
+# Run AccommodationSearch to get accommodation info and accommodation constraints for city_0 and city_1
+            accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [city_0, city_1])
+            
+            # Set 'accommodation_index' variables for 2 (1 per city) accommodations
+            variables['accommodation_index'] = [Int('accommodation_0_index'), Int('accommodation_1_index')]
+            
+            # For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 2 people and accommodation price
+            all_accommodation_price = 0
+            for i, variable in enumerate(variables['accommodation_index']):
+                accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+                s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for city {i}')
+                accommodation_maximum_occupancy_list, _ = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Maximum_occupancy')
+                num_room = convert_to_int(RealVal(2) / AccommodationSearch.get_info_for_index(accommodation_maximum_occupancy_list, variable))
+                nights_stayed = variables['departure_dates'][i+1] - variables['departure_dates'][i]
+                room_price = AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+                all_accommodation_price += num_room * nights_stayed * room_price
+            
+            # For each city, get accommodation minimum night info and assert it to be less than the days stay in this city
+            for index, city in enumerate(variables['city']):
+                accommodation_minimum_nights_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Minimum_nights')
+                minimum_night = AccommodationSearch.get_info_for_index(accommodation_minimum_nights_list, variables['accommodation_index'][index])
+                days_stay = variables['departure_dates'][index+1] - variables['departure_dates'][index]
+                s.assert_and_track(minimum_night <= days_stay, f'minimum nights satisfied for city {index}')
+            
+            # For each 'accommodation_index', get specific room type info and assert 'Shared room' exist for all accommodations
+            for i, variable in enumerate(variables['accommodation_index']):
+                accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+                has_shared_room = AccommodationSearch.check_exists('Shared room', accommodation_room_types_list, variable)
+                s.assert_and_track(has_shared_room == True, f'Shared room exists for city {i}')

@@ -1,0 +1,16 @@
+variables['total_budget'] = RealVal(5600)
+                spent = 0
+                # Transportation costs for destination 0
+                spent += If(variables['flight'][0], flight_0_price, If(variables['self-driving'][0], self_driving_0_price, If(variables['taxi'][0], taxi_0_price, 10000)))
+                # Transportation costs for destination 1
+                spent += If(variables['flight'][1], flight_1_price, If(variables['self-driving'][1], self_driving_1_price, If(variables['taxi'][1], taxi_1_price, 10000)))
+                # Transportation costs for destination 2
+                spent += If(variables['flight'][2], flight_2_price, If(variables['self-driving'][2], self_driving_2_price, If(variables['taxi'][2], taxi_2_price, 10000)))
+                # Add restaurant costs to spent
+                spent += all_restaurant_price
+                # Add accommodation costs to spent
+                spent += all_accommodation_price
+                # Add attraction costs to spent
+                spent += all_attraction_price
+                # Assert total spent is within budget
+                s.assert_and_track(spent <= variables['total_budget'], 'budget sufficient')

@@ -1,0 +1,6 @@
+# Search for accommodations in Los Angeles with private rooms
+    for i, city in enumerate(variables['city']):
+        if city == 'Los Angeles':
+            accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+            selected_room_type = AccommodationSearch.get_info_for_index(accommodation_room_types_list, variables['accommodation_index'][i])
+            s.assert_and_track(selected_room_type == 'private room', 'Private room in Los Angeles')

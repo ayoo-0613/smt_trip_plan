@@ -1,0 +1,21 @@
+# Run AccommodationSearch to get hotel info for each city in Florida
+                accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, florida_cities) 
+                
+                # Set 'accommodation_index' variables for 3 (1 per city) accommodations
+                variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(3)]
+                
+                # For each accommodation, check minimum night requirement and calculate cost
+                all_accommodation_price = 0
+                for i, variable in enumerate(variables['accommodation_index']):
+                    accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+                    s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for city {i}')
+                    num_room = convert_to_int(RealVal(1) / AccommodationSearch.get_info_for_index([1], 0))  # Assuming 1 person per room
+                    all_accommodation_price += (variables['departure_dates'][i+1] - variables['departure_dates'][i]) * num_room * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+                
+                # Ensure all accommodations have private rooms for solo traveler comfort 
+                for index, city in enumerate(variables['city']):
+                    accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, city, 'Room_types')
+                    s.assert_and_track(AccommodationSearch.check_exists('Entire home/apt', accommodation_room_types_list, variables['accommodation_index'][index]), f'Private room available in {city}')
+                    
+                # Calculate total accommodation cost and ensure it's within budget
+                s.assert_and_track(all_accommodation_price <= variables['budget'], 'Accommodation cost within budget')

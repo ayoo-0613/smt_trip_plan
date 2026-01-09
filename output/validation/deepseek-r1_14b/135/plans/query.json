@@ -1,0 +1,1 @@
+{"org": "Santa Ana", "dest": "Houston", "days": 3, "visiting_city_number": 1, "date": ["2022-03-21", "2022-03-22", "2022-03-23"], "people_number": 2, "local_constraint": {"house rule": "smoking", "cuisine": ["American", "Italian", "Mediterranean", "Mexican"], "room type": null, "transportation": "no self-driving"}, "budget": 3000}

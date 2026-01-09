@@ -1,0 +1,16 @@
+# Run DistanceSearch to get driving info for Pittsburgh as origin and city_0 and city_1
+            driving_info = DistanceSearch.run_for_all_cities('Pittsburgh', cities, [city_0, city_1])  # use driving_info, do not customize
+            # Get specific driving distance info with Pittsburgh as origin and final destination, specific city, and departure date for 2 transportations
+            driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, 'Pittsburgh', variables['city'][0], 'Distance')
+            driving_3_distance, driving_3_length = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Distance')
+            # Calculate self-driving and taxi price for 3 people and 2 transportations based on driving distance
+            self_driving_2_price = 0.05 * driving_2_distance * math.ceil(3 / 5)
+            self_driving_3_price = 0.05 * driving_3_distance * math.ceil(3 / 5)
+            taxi_2_price = driving_2_distance * math.ceil(3 / 4)
+            taxi_3_price = driving_3_distance * math.ceil(3 / 4)
+            # Get driving arrival time with Pittsburgh as origin and final destination, specific city, and departure date for 2 transportations 
+            driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, 'Pittsburgh', variables['city'][0], 'Duration') # Use driving_2_arrtime, do not customize
+            driving_3_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration') # Use driving_3_arrtime, do not customize
+            # Assert driving info is not empty if driving
+            s.assert_and_track(Implies(Or(variables['self-driving'][2], variables['taxi'][2]), driving_2_length > 0), 'driving is possible for transportation 2')
+            s.assert_and_track(Implies(Or(variables['self-driving'][3], variables['taxi'][3]), driving_3_length > 0), 'driving is possible for transportation 3')

@@ -1,0 +1,16 @@
+# Run AttractionSearch to get attraction info for Boston and Providence
+            attraction_info = AttractionSearch.run_for_all_cities(cities, [Boston, Providence])
+            # Set 'attraction_in_which_city' variables for 5 (1 per day) attractions
+            variables['attraction_in_which_city'] = [Int('attraction_' + str(i)) for i in range(1*5)]
+            # For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+            for i, variable in enumerate(variables['attraction_in_which_city']):
+                s.assert_and_track(variable == If(arrives[i] > 18, cities[(i+1) % 2], cities[i % 2]), 'attraction in which city')
+            # Set 'attraction_index' variables for 5 attractions
+            variables['attraction_index'] = [Int('attraction_{}_index'.format(i)) for i in range(1*5)]
+            # For each 'attraction_index', get specific length info based on attraction in which city variable, assert index are within valid range, and attrations in same city are not repeated
+            for i, variable in enumerate(variables['attraction_index']):
+                attraction_list_length = AttractionSearch.get_info(attraction_info, variables['attraction_in_which_city'][i])
+                s.assert_and_track(Implies(variables['attraction_in_which_city'][i] != -1, And(variable >= 0, variable < attraction_list_length)), 'valid attraction index')
+                s.assert_and_track(Implies(variables['attraction_in_which_city'][i] == -1, variable == -1), 'valid attraction index')
+                for j in range(i-1, -1, -1):
+                    s.assert_and_track(Implies(And(variables['attraction_in_which_city'][i] != -1, variables['attraction_in_which_city'][i] == variables['attraction_in_which_city'][j]), variable != variables['attraction_index'][j]), 'non repeating attraction index')

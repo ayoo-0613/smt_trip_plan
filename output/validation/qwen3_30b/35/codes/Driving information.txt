@@ -1,0 +1,2 @@
+cost_driving1 = self_driving_0_price
+            cost_driving2 = self_driving_1_price

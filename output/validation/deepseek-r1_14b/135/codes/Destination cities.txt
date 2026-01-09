@@ -1,0 +1,5 @@
+cities = ['Houston']
+for city_0_index, city_0 in enumerate(cities):
+    s = Optimize()
+    variables['city'] = [Int('city_' + str(i)) for i in range(1)]
+    s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')

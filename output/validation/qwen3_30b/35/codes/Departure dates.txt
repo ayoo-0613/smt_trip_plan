@@ -1,0 +1,2 @@
+s.assert_and_track(And(variables['departure_dates'][0] >= 0, variables['departure_dates'][0] <= 3), 'first leg date')
+            s.assert_and_track(And(variables['departure_dates'][1] >= variables['departure_dates'][0] + 1, variables['departure_dates'][1] <= 3), 'second leg date')

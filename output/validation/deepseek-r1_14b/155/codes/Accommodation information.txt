@@ -1,0 +1,25 @@
+# Run AccommodationSearch to get accommodation info and accommodation constraints for intermediate city and New York
+            accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, [intermediate_city, new_york]) 
+            # Set 'accommodation_index' variables for 2 (1 per city) accommodations
+            variables['accommodation_intermediate_index'] = Int('accommodation_intermediate_index')
+            variables['accommodation_new_york_index'] = Int('accommodation_new_york_index')
+            # For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 2 people and accommodation price
+            all_accommodation_price = 0
+            for i, (city, variable) in enumerate(zip([intermediate_city, new_york], [variables['accommodation_intermediate_index'], variables['accommodation_new_york_index']])):
+                accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, city, 'Price')
+                s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for {city}')
+                accommodation_maximum_occupancy_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Maximum_occupancy')
+                num_room = convert_to_int(RealVal(2) / AccommodationSearch.get_info_for_index(accommodation_maximum_occupancy_list, variable))
+                nights_stayed = variables['departure_dates'][i+1] - variables['departure_dates'][i]
+                all_accommodation_price += nights_stayed * num_room * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+            # For each city, get accommodation minimum night info and assert it to be less than the days stay in this city
+            for index, city in enumerate([intermediate_city, new_york]):
+                accommodation_minimum_nights_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Minimum_nights')
+                minimum_night = AccommodationSearch.get_info_for_index(accommodation_minimum_nights_list, variables[f'accommodation_{city.replace(" ", "")}_index'])
+                s.assert_and_track(minimum_night <= variables['departure_dates'][index+1] - variables['departure_dates'][index], f'minimum nights satisfied for {city}')
+            # For each 'accommodation_index', get specific room type and house rules info, assert 'Shared room' does not exist for all accommodations, assert 'Private room' exist for all accommodations
+            for i, (city, variable) in enumerate(zip([intermediate_city, new_york], [variables['accommodation_intermediate_index'], variables['accommodation_new_york_index']])):
+                accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, city, 'Room_types')
+                accommodation_house_rules_list, _ = AccommodationSearch.get_info(accommodation_constraints, city, 'House_rules')
+                s.assert_and_track(AccommodationSearch.check_exists('Private room', accommodation_room_types_list, variable) == True, f'Private room types accommodation for {city}')
+                s.assert_and_track(AccommodationSearch.check_exists('Shared room', accommodation_room_types_list, variable) == False, f'Shared room types accommodation not visited for {city}')

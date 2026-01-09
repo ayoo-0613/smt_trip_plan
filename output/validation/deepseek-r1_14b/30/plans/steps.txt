@@ -1,0 +1,92 @@
+<think>
+Okay, so I need to figure out how to encode the constraints from this natural language query into code. Let me read through the examples provided to understand the structure.
+
+The user wants a travel plan starting in Key West and covering 2 cities in Indiana, from March 10th to March 14th, 2022, with a budget of $2,000. 
+
+Looking at the examples, each step starts with a comment like "# Destination cities #" followed by specific instructions. I need to break down the query into similar sections.
+
+First, destination cities: The user wants two cities in Indiana. So, I'll run CitySearch for Indiana cities during the given dates from Key West and ensure we exclude Key West if it's in the list.
+
+Next, departure dates: There are 2 transportations needed (since there are two cities). The first transportation is on day 0, and the last on day 3 (since March 14th is the fourth day, but days start at 0).
+
+Transportation methods: Since the user didn't specify, we'll consider flight, self-driving, or taxi. But in Example 3, they didn't take flights, so maybe here it's possible to choose any.
+
+Flight information: Run FlightSearch from Key West to each Indiana city on the required dates and set flight indices accordingly.
+
+Driving info: Calculate costs for self-driving or taxi based on distance between cities.
+
+Restaurants: Need to find places in both cities. Set variables for each meal, ensuring they're in the correct city based on arrival times.
+
+Attractions: Similarly, set attractions in each city with appropriate indices.
+
+Accommodation: Search for places in each Indiana city, check room types and minimum nights.
+
+Budget: Sum up all costs (transportation, food, accommodation) and ensure it's under $2000.
+
+I think that covers all the steps. Now, I'll structure them following the examples.
+</think>
+
+# Destination cities #  
+# Run CitySearch to get a list of 2 cities in Indiana  
+# Set cities to be a list includes the two selected Indiana cities  
+# Loop through cities for 2 destination cities  
+# Initialize Z3 solver s  
+# Set 'city' variable to be indexes of 2 destination cities  
+
+# Departure dates #  
+# Set 'departure_dates' variables for 2 transportations between cities  
+# Assert first transportation happens at first day (day 0)  
+# Assert last transportation happens at last day (day 3)  
+
+# Transportation methods #  
+# Set transportation method (flight, self-driving, taxi) variable for 2 transportations between cities  
+# Assert only one of flight, self-driving, or taxi is used for 2 transportations between cities  
+# Assert self-driving is not valid if taxi or flight is used for any transportation  
+
+# Flight information #  
+# Run FlightSearch to get flight info for Key West as origin, list of cities, city_0 and city_1, and dates ["2022-03-10", "2022-03-11", "2022-03-12", "2022-03-13"]  
+# Get specific flight price info with Key West as origin and final destination, specific city, and departure date for 2 transportations  
+# Set 'flight_index' variable for 2 transportations  
+# Assert 2 'flight_index' variables are within valid range if taking flight  
+# Assert flight index is -1 if not taking flight  
+
+# Driving information #  
+# Run DistanceSearch to get driving info for Key West as origin and city_0, then city_0 as origin and city_1  
+# Get specific driving distance info with Key West as origin and final destination, specific city, and departure date for 2 transportations  
+# Assert driving info is not empty if driving  
+# Calculate self-driving and taxi price for 2 people and 2 transportations based on driving distance  
+# Get driving arrival time with Key West as origin and final destination, specific city, and departure date for 2 transportations  
+
+# Restaurant information #  
+# Get arrivals and city list for each day based on 2 transportations, 4 total travel day, and departure dates variables  
+# Run RestaurantSearch to get restaurant price info and cuisine info for city_0 and city_1  
+# Set 'restaurant_in_which_city' variables for 12 (3 meals per day, 4 days) meals  
+# For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'restaurant_index' variables for 12 (3 meals per day, 4 days) meals  
+# For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable  
+# Assert index are within valid range  
+# Assert restaurants in same city are not repeated  
+
+# Attraction information #  
+# Run AttractionSearch to get attraction info for city_0 and city_1  
+# Set 'attraction_in_which_city' variables for 4 (1 per day) attractions  
+# For each 'attraction_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time  
+# Set 'attraction_index' variables for 4 (1 per day) attractions  
+# For each 'attraction_index', get specific length info based on attraction in which city variable  
+# Assert index are within valid range  
+# Assert attractions in same city are not repeated  
+
+# Accommodation information #  
+# Run AccommodationSearch to get accommodation info and accommodation constraints for city_0 and city_1  
+# Set 'accommodation_index' variables for 2 (1 per city) accommodations  
+# For each 'accommodation_index', get specific price info based on accommodation in which city variable  
+# Assert 'accommodation_index' variable are within valid range  
+# Calculate number of room need for 2 people and accommodation price  
+# For each city, get accommodation minimum night info and assert it to be less than the days stay in this city  
+
+# Budget #  
+# Set budget limit variable to be 2000  
+# Add 2 transportation price to spent, according to whether transportation method is flight, self-driving, or taxi  
+# Add restaurant price to spent  
+# Add accommodation price to spent  
+# Assert current spent is within budget

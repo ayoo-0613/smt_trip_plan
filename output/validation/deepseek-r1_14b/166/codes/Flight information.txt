@@ -1,0 +1,11 @@
+flight_info = FlightSearch.run_for_all_cities_and_dates('Las Vegas', cities, [city_0], ["2022-03-04", "2022-03-05", "2022-03-06", "2022-03-07", "2022-03-08", "2022-03-09", "2022-03-10"]) # use flight_info, do not customize
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Las Vegas', variables['city'][0], variables['departure_dates'][0], 'Price')
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'Price')
+                flight_2_price_list, flight_2_price_list_length = FlightSearch.get_info(flight_info, variables['city'][1], 'Las Vegas', variables['departure_dates'][2], 'Price')
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(3)]
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0,variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0,variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(variables['flight'][2], And(variables['flight_index'][2] >= 0,variables['flight_index'][2] < flight_2_price_list_length)), 'valid flight index for flight 2')
+                s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(Not(variables['flight'][1]), variables['flight_index'][1] == -1), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(Not(variables['flight'][2]), variables['flight_index'][2] == -1), 'valid flight index for flight 2')

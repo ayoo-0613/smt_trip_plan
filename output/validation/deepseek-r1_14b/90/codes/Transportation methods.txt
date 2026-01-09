@@ -1,0 +1,19 @@
+variables['drive'] = [Bool('drive_' + str(i)) for i in range(3)]
+            variables['taxi'] = [Bool('taxi_' + str(i)) for i in range(3)]
+            
+            s.assert_and_track(Or(variables['drive'][0], variables['taxi'][0]), 'either drive or taxi for first transportation')
+            s.assert_and_track(Not(And(variables['drive'][0], variables['taxi'][0])), 'not both drive and taxi for first transportation')
+            
+            s.assert_and_track(Or(variables['drive'][1], variables['taxi'][1]), 'either drive or taxi for second transportation')
+            s.assert_and_track(Not(And(variables['drive'][1], variables['taxi'][1])), 'not both drive and taxi for second transportation')
+            
+            s.assert_and_track(Or(variables['drive'][2], variables['taxi'][2]), 'either drive or taxi for third transportation')
+            s.assert_and_track(Not(And(variables['drive'][2], variables['taxi'][2])), 'not both drive and taxi for third transportation')
+            
+            s.assert_and_track(Implies(Or(variables['drive'][0], variables['drive'][1], variables['drive'][2]), 
+                                      Not(Or(variables['drive'][0], variables['drive'][1], variables['drive'][2]))), 
+                              'only one drive transportation across all trips')
+            
+            s.assert_and_track(Implies(Or(variables['taxi'][0], variables['taxi'][1], variables['taxi'][2]), 
+                                      Not(Or(variables['taxi'][0], variables['taxi'][1], variables['taxi'][2]))), 
+                              'only one taxi transportation across all trips')

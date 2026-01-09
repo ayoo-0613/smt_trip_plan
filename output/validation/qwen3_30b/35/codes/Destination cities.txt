@@ -1,0 +1,9 @@
+nc_cities = CitySearch.run('North Carolina', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])
+if 'Atlanta' in nc_cities:
+    nc_cities.remove('Atlanta')
+idx0 = nc_cities.index('city0')
+idx1 = nc_cities.index('city1')
+s = Optimize()
+variables['city'] = [Int('city_' + str(i)) for i in range(2)]
+s.assert_and_track(variables['city'][0] == idx0, 'visit city0')
+s.assert_and_track(variables['city'][1] == idx1, 'visit city1')

@@ -1,0 +1,28 @@
+# Run FlightSearch to get flight info from Los Angeles to each city in Florida on specified dates
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Los Angeles', florida_cities, [city_0, city_1], ["2023-03-16", "2023-03-17", "2023-03-18"])  # use flight_info, do not customize
+                
+                # Get specific flight price info for each transportation leg using flight index
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Los Angeles', variables['city'][0], variables['departure_dates'][0], 'Price')
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'Price')
+                flight_2_price_list, flight_2_price_list_length = FlightSearch.get_info(flight_info, variables['city'][1], 'Atlanta', variables['departure_dates'][2], 'Price')
+                
+                # Set 'flight_index' variable for 3 transportations
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(3)]
+                
+                # Assert flight index constraints
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0, variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0, variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(variables['flight'][2], And(variables['flight_index'][2] >= 0, variables['flight_index'][2] < flight_2_price_list_length)), 'valid flight index for flight 2')
+                
+                # Calculate total flight cost
+                total_flight_cost = 2 * (FlightSearch.get_info_for_index(flight_0_price_list, variables['flight_index'][0]) + 
+                                        FlightSearch.get_info_for_index(flight_1_price_list, variables['flight_index'][1]) +
+                                        FlightSearch.get_info_for_index(flight_2_price_list, variables['flight_index'][2]))
+                
+                # Ensure total flight cost is within budget
+                budget = 1000
+                s.assert_and_track(total_flight_cost <= budget, 'total flight cost within budget')
+                
+                # If flights are too expensive, consider alternative transportation methods
+                alternative_transportation = Bool('alternative_transportation')
+                s.assert_and_track(Implies(total_flight_cost > budget, alternative_transportation), 'alternative transportation if flights too expensive')

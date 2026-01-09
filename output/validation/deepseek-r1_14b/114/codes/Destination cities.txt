@@ -1,0 +1,19 @@
+# Run search for Colorado cities  
+cities = CitySearch.run('Colorado', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])  
+if 'Atlanta' in cities:  
+        cities.remove('Atlanta')  
+# Set cities to be a list includes 3 Colorado cities  
+cities = ['Denver', 'Boulder', 'Aurora']  
+# Loop through cities for 3 destination cities  
+for city_0_index, city_0 in enumerate(cities):  
+    for city_1_index, city_1 in enumerate(cities):  
+        for city_2_index, city_2 in enumerate(cities):  
+            # Initialize Z3 solver s  
+            s = Optimize()  
+            # Set 'city' variable to be indexes of 3 destination cities  
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]  
+            # If city_0_index, city_1_index and city_2_index are not same, assert 3 'city' variables equal to city index  
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:  
+                s.assert_and_track(variables['city'][0] == city_0_index,  'visit city in cities list')  
+                s.assert_and_track(variables['city'][1] == city_1_index,  'visit city in cities list')  
+                s.assert_and_track(variables['city'][2] == city_2_index,  'visit city in cities list')

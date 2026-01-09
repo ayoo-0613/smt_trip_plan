@@ -1,0 +1,50 @@
+# Get arrivals and city list for each day based on 2 transportations, 5 total travel day, and departure dates variables
+            transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+            transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+            arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime], 5, variables['departure_dates'])
+            city_list = get_city_list(variables['city'], 5, variables['departure_dates'])
+            
+            # Run RestaurantSearch to get restaurant price info for each city in Illinois
+            illinois_cities = ['Chicago', ' Springfield', ...]  # List of cities in Illinois
+            restaurant_price = {}
+            for city in illinois_cities:
+                restaurant_price[city] = RestaurantSearch.get_info(restaurant_price, city, 'Price')
+            
+            # Set 'restaurant_in_which_city' variables for 15 (3 meals per day, 5 days) meals
+            variables['restaurant_in_which_city'] = [Int('restaurant_' + str(i)) for i in range(3*5)]
+            
+            # For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+            for i, variable in enumerate(variables['restaurant_in_which_city']):
+                date_index = i // 3
+                meal_index = i % 3
+                if meal_index == 0:  # breakfast
+                    s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city b')
+                    s.assert_and_track(Implies(arrives[date_index] > 10, variable == city_list[date_index]), 'eat in which city b')
+                    s.assert_and_track(Implies(arrives[date_index] < 5, variable == city_list[date_index+1]), 'eat in which city b')
+                if meal_index == 1:  # lunch
+                    s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city l')
+                    s.assert_and_track(Implies(arrives[date_index] > 15, variable == city_list[date_index]), 'eat in which city l')
+                    s.assert_and_track(Implies(arrives[date_index] < 10, variable == city_list[date_index+1]), 'eat in which city l')
+                if meal_index == 2:  # dinner
+                    s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city d')
+                    s.assert_and_track(Implies(arrives[date_index] > 22, variable == city_list[date_index]), 'eat in which city d')
+                    s.assert_and_track(Implies(arrives[date_index] < 17, variable == city_list[date_index+1]), 'eat in which city d')
+            
+            # Set 'restaurant_index' variables for 15 (3 meals per day, 5 days) meals
+            variables['restaurant_index'] = [Int('restaurant_{}_index'.format(i)) for i in range(3*5)]
+            
+            # For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, assert restaurants in same city are not repeated, and calculate restaurant price for 1 person
+            all_restaurant_price = 0
+            for i, variable in enumerate(variables['restaurant_index']):
+                city = variables['restaurant_in_which_city'][i]
+                if city != -1:
+                    restaurant_price_list = restaurant_price[city]
+                    s.assert_and_track(Implies(city != -1, And(variable >= 0, variable < len(restaurant_price_list))), 'valid restaurant index')
+                    
+                    # Ensure restaurants in same city are not repeated
+                    for j in range(i-1, -1, -1):
+                        if variables['restaurant_in_which_city'][j] == city:
+                            s.assert_and_track(variable != variables['restaurant_index'][j], 'non repeating restaurant index')
+                            
+                    # Calculate restaurant price for 1 person
+                    all_restaurant_price += If(city != -1, RestaurantSearch.get_info_for_index(restaurant_price_list, variable), 0)

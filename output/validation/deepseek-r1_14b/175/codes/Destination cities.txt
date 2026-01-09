@@ -1,0 +1,7 @@
+cities = ['Chicago', 'Springfield', 'Peoria']
+for city_0, city_1, city_2 in itertools.product(cities, repeat=3):
+    s = Optimize()
+    variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+    s.assert_and_track(variables['city'][0] == cities.index(city_0), 'visit city in cities list')
+    s.assert_and_track(variables['city'][1] == cities.index(city_1), 'visit city in cities list')
+    s.assert_and_track(variables['city'][2] == cities.index(city_2), 'visit city in cities list')

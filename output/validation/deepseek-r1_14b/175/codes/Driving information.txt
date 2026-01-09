@@ -1,0 +1,20 @@
+# Run DistanceSearch to get driving info for Minneapolis as origin and city_0, city_1, city_2
+                driving_info = DistanceSearch.run_for_all_cities('Minneapolis', cities, [city_0, city_1, city_2])  # use driving_info, do not customize
+                
+                # Get specific driving distance info with Minneapolis as origin and final destination, specific city, and departure date for 2 transportations
+                minneapolis_0_distance, minneapolis_0_length = DistanceSearch.get_info(driving_info, 'Minneapolis', variables['city'][0], 'Distance')
+                minneapolis_1_distance, minneapolis_1_length = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Distance')
+                
+                # Assert driving info is not empty if driving
+                s.assert_and_track(Implies(Or(variables['self-driving'][0], variables['taxi'][0]), minneapolis_0_length > 0), 'driving is possible for transportation 0')
+                s.assert_and_track(Implies(Or(variables['self-driving'][1], variables['taxi'][1]), minneapolis_1_length > 0), 'driving is possible for transportation 1')
+                
+                # Calculate self-driving and taxi price for 2 people and 2 transportations based on driving distance
+                self_driving_0_price = 0.05 * minneapolis_0_distance * math.ceil(2 / 5)
+                self_driving_1_price = 0.05 * minneapolis_1_distance * math.ceil(2 / 5)
+                taxi_0_price = minneapolis_0_distance * math.ceil(2 / 4)
+                taxi_1_price = minneapolis_1_distance * math.ceil(2 / 4)
+                
+                # Get driving arrival time with Minneapolis as origin and final destination, specific city, and departure date for 2 transportations
+                minneapolis_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Minneapolis', variables['city'][0], 'Duration')
+                minneapolis_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration')

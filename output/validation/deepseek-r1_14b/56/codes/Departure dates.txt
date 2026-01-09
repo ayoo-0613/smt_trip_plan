@@ -1,0 +1,8 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(4)]
+                # Assert first transportation happens on March 22nd (day 0) and last transportation on March 28th (day 6)
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation departure date')
+                s.assert_and_track(variables['departure_dates'][3] == 6, 'last transportation departure date')
+                # Assert each subsequent transportation departs after the previous one
+                s.assert_and_track(And(variables['departure_dates'][1] > variables['departure_dates'][0], 
+                                       variables['departure_dates'][2] > variables['departure_dates'][1],
+                                       variables['departure_dates'][3] > variables['departure_dates'][2]), 'sequential departures')

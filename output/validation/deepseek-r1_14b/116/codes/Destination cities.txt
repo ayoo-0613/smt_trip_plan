@@ -1,0 +1,21 @@
+# Set cities to be a list includes three different cities in California (e.g., Los Angeles, San Francisco, San Diego)  
+cities = ['Los Angeles', 'San Francisco', 'San Diego']  
+
+# Loop through cities for the three destination locations
+for city0_index, city0 in enumerate(cities):
+    for city1_index, city1 in enumerate(cities):
+        for city2_index, city2 in enumerate(cities):
+            # Initialize Z3 solver s
+            s = Optimize()
+            # Set 'city' variable to be indexes of 3 destination cities
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            # If all three city indices are different, assert constraints
+            if city0_index != city1_index and city1_index != city2_index and city0_index != city2_index:
+                s.assert_and_track(variables['city'][0] == city0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city2_index, 'visit city in cities list')
+            # Solve the problem
+            if s.check() == sat:
+                print("Solution exists for", city0, city1, city2)
+            else:
+                print("No solution for", city0, city1, city2)

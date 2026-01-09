@@ -1,0 +1,23 @@
+# Run CitySearch to get list of cities in Texas  
+cities = CitySearch.run('Texas', 'Atlanta', ["2022-03-16", "2022-03-17", "2022-03-18"])  
+if 'Atlanta' in cities:  
+        cities.remove('Atlanta')  
+
+# Set cities to be a list includes 3 destination cities in Texas  
+cities = ['Austin', 'Dallas', 'Houston']  
+
+# Loop through cities for 3 destination cities  
+for city_0_index, city_0 in enumerate(cities):  
+    for city_1_index, city_1 in enumerate(cities):  
+        for city_2_index, city_2 in enumerate(cities):  
+            # Initialize Z3 solver s  
+            s = Optimize()  
+            # Set 'city' variable to be indexes of 3 destination cities  
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]  
+            # Assert 'city' variables are valid and within budget  
+            s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')  
+            s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')  
+            s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')  
+            # Add budget constraints  
+            s.add_clause(And(cost(city_0) <= 500, cost(city_1) <= 500, cost(city_2) <= 500))  
+            s.add_clause(And(time(city_0) <= 4, time(city_1) <= 4, time(city_2) <= 4))

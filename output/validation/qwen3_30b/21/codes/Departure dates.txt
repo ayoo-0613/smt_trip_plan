@@ -1,0 +1,1 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(3)]

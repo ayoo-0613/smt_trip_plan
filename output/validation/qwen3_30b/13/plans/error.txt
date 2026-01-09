@@ -1,1 +1,1 @@
-Expecting value: line 1 column 1 (char 0)
+Unknown step type. Header: Transportation: from Pittsburgh to Baltimore (one leg, but we'll represent it as 2 transportations for consistency with the example)

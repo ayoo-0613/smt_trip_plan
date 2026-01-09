@@ -1,0 +1,5 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(6)]
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+                s.assert_and_track(variables['departure_dates'][5] == 6, 'travel end date')
+                for i in range(4):
+                    s.assert_and_track(variables['departure_dates'][i+1] > variables['departure_dates'][i], f'transportation {i+2} departs after transportation {i+1}')

@@ -1,0 +1,193 @@
+cities = ['San Francisco', 'Los Angeles', 'San Diego']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s = Optimize()
+                variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')
+cities = ['LosAngeles', 'SanFrancisco', 'SanDiego']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s = Optimize()
+                variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+                s.assert_and_track(variables['departure_dates'][1] == 6, 'travel end date')
+# We are going to enforce for each trip i (0,1,2) that exactly one of flight, self-driving, taxi is chosen.
+                # But note: we are also going to enforce that self-driving is not used at all, so effectively for each trip, we have flight or taxi.
+                
+                # However, the constraint for the trip (exactly one of the three) is already set by the Or and the pairwise exclusions.
+                # We have already defined the variables.
+                
+                # So we only need to add the constraint that self-driving is not used for any trip (which the example code already has at the end, but we are to write the code for the constraints as per the problem).
+                
+                # But note: the problem says "For this below instruction", meaning we are to write the code that enforces the constraints.
+                
+                # We'll write the constraints for the three trips (the Or and the pairwise exclusions) and then the constraint that self-driving is not used.
+                
+                # However, the example code already has the Or and pairwise exclusions for the three trips (for each trip) and then the constraint that self-driving is not used.
+                
+                # But the example code also has a duplicate for 2 trips? We are to write the correct one for 3 trips.
+                
+                # So we write the constraints for the three trips (each trip) and then the self-driving not used.
+                
+                # But note: the example code provided in the problem statement has the constraints for the three trips (with the Or and the pairwise exclusions) and then the self-driving not used.
+                
+                # However, the problem statement says: "Based on the examples above, ...", so we are to follow the structure.
+                
+                # We are going to write the constraints for the three trips (each trip) and then the self-driving not used.
+                
+                # But note: the example code already has the self-driving not used at the end. So we don't need to write it again? Actually, the problem says "write corresponding code", meaning we are to write the code that enforces the constraints.
+                
+                # Since the problem says "We'll allow all transportation methods (since not specified)" but then we are to enforce that self-driving is not used (because of the last constraint), we write:
+                
+                # For each trip i in [0,1,2]:
+                #   s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), ...)
+                #   s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), And(variables['flight'][i], variables['taxi'][i]), And(variables['self-driving'][i], variables['taxi'][i]))), ...)
+                
+                # And then:
+                #   s.assert_and_track(Not(variables['self-driving'][0]), ...)
+                #   s.assert_and_track(Not(variables['self-driving'][1]), ...)
+                #   s.assert_and_track(Not(variables['self-driving'][2]), ...)
+                
+                # However, the example code already has the first part (for the three trips) and the last part (self-driving not used). But it also has a duplicate for 2 trips.
+                
+                # We are to write the correct code without the duplicate.
+                
+                # So we write the constraints for the three trips (the Or and the pairwise exclusions) and then the self-driving not used.
+                
+                # But note: the problem says "write corresponding code", so we write the code that is missing? Actually, the problem statement provided an example code that has the duplicate, so we are to write the corrected version.
+                
+                # However, the problem says "For this below instruction", meaning we are to write the code that enforces the constraints as per the problem.
+                
+                # We'll write the constraints for the three trips (each trip) and then the self-driving not used.
+                
+                # But note: the example code already defined the variables, so we don't need to redefine.
+                
+                # So the code we write is:
+                
+                # For i in [0,1,2]:
+                #   s.assert_and_track(Or(flight_i, self-driving_i, taxi_i), ...)
+                #   s.assert_and_track(Not(Or(And(flight_i, self-driving_i), And(flight_i, taxi_i), And(self-driving_i, taxi_i))), ...)
+                
+                # And then the three Not(self-driving_i) constraints.
+                
+                # However, the problem says "respond instruction with code only", so we write the code.
+                
+                # But note: the problem statement example code used the variable names as given.
+                
+                # Let's write the code.
+                
+                # Important: We are to write the code that enforces the constraints for the three trips (not for two trips).
+                
+                # So we write:
+                
+                for i in range(3):
+                    s.assert_and_track(Or(variables['flight'][i], variables['self-driving'][i], variables['taxi'][i]), f"Trip {i} must have one method")
+                    s.assert_and_track(Not(Or(And(variables['flight'][i], variables['self-driving'][i]), 
+                                             And(variables['flight'][i], variables['taxi'][i]), 
+                                             And(variables['self-driving'][i], variables['taxi'][i]))), 
+                                      f"Trip {i} must have exactly one method")
+                
+                s.assert_and_track(Not(variables['self-driving'][0]), "Self-driving not used in trip 0")
+                s.assert_and_track(Not(variables['self-driving'][1]), "Self-driving not used in trip 1")
+                s.assert_and_track(Not(variables['self-driving'][2]), "Self-driving not used in trip 2")
+                
+                # However, note: the problem says "write corresponding code", and the example code used the variable names as given (with the list indices).
+                
+                # But the example code in the problem statement did not use a loop, it wrote out for each trip.
+                
+                # We'll write it without a loop to match the example style.
+                
+                # So:
+                
+                s.assert_and_track(Or(variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]), "Trip 0 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][0], variables['self-driving'][0]), 
+                                         And(variables['flight'][0], variables['taxi'][0]), 
+                                         And(variables['self-driving'][0], variables['taxi'][0]))), 
+                                  "Trip 0 must have exactly one method")
+                
+                s.assert_and_track(Or(variables['flight'][1], variables['self-driving'][1], variables['taxi'][1]), "Trip 1 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][1], variables['self-driving'][1]), 
+                                         And(variables['flight'][1], variables['taxi'][1]), 
+                                         And(variables['self-driving'][1], variables['taxi'][1]))), 
+                                  "Trip 1 must have exactly one method")
+                
+                s.assert_and_track(Or(variables['flight'][2], variables['self-driving'][2], variables['taxi'][2]), "Trip 2 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][2], variables['self-driving'][2]), 
+                                         And(variables['flight'][2], variables['taxi'][2]), 
+                                         And(variables['self-driving'][2], variables['taxi'][2]))), 
+                                  "Trip 2 must have exactly one method")
+                
+                s.assert_and_track(Not(variables['self-driving'][0]), "Self-driving not used in trip 0")
+                s.assert_and_track(Not(variables['self-driving'][1]), "Self-driving not used in trip 1")
+                s.assert_and_track(Not(variables['self-driving'][2]), "Self-driving not used in trip 2")
+                
+                # But note: the problem statement example code had a constraint that said "no self-driving if flight or taxi is used", which we are not writing because it's redundant.
+                
+                # However, the problem says "We'll allow all transportation methods (since not specified)" but then we are enforcing that self-driving is not used. So we are not allowing self-driving.
+                
+                # This is the correct constraint.
+                
+                # But note: the example code in the problem statement already had the self-driving not used at the end, so we are just writing the constraints for the trips and the self-driving not used.
+                
+                # However, the problem statement example code had a duplicate for 2 trips, so we are writing the correct one for 3 trips.
+                
+                # We'll write the above.
+                
+                # But note: the problem says "respond instruction with code only", so we write the code without any extra text.
+                
+                # However, the problem says "Start with ########## Transportation response########## and end with ########## Transportation response ends##########."
+                
+                # So we write:
+                
+                ########## Transportation response##########
+                s.assert_and_track(Or(variables['flight'][0], variables['self-driving'][0], variables['taxi'][0]), "Trip 0 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][0], variables['self-driving'][0]), 
+                                         And(variables['flight'][0], variables['taxi'][0]), 
+                                         And(variables['self-driving'][0], variables['taxi'][0]))), 
+                                  "Trip 0 must have exactly one method")
+                s.assert_and_track(Or(variables['flight'][1], variables['self-driving'][1], variables['taxi'][1]), "Trip 1 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][1], variables['self-driving'][1]), 
+                                         And(variables['flight'][1], variables['taxi'][1]), 
+                                         And(variables['self-driving'][1], variables['taxi'][1]))), 
+                                  "Trip 1 must have exactly one method")
+                s.assert_and_track(Or(variables['flight'][2], variables['self-driving'][2], variables['taxi'][2]), "Trip 2 must have one method")
+                s.assert_and_track(Not(Or(And(variables['flight'][2], variables['self-driving'][2]), 
+                                         And(variables['flight'][2], variables['taxi'][2]), 
+                                         And(variables['self-driving'][2], variables['taxi'][2]))), 
+                                  "Trip 2 must have exactly one method")
+                s.assert_and_track(Not(variables['self-driving'][0]), "Self-driving not used in trip 0")
+                s.assert_and_track(Not(variables['self-driving'][1]), "Self-driving not used in trip 1")
+                s.assert_and_track(Not(variables['self-driving'][2]), "Self-driving not used in trip 2")
+flight_0_arrtime = FlightSearch.get_info_for_index(flight_0_arrtime_list, variables['flight_index'][0])
+                flight_1_arrtime = FlightSearch.get_info_for_index(flight_1_arrtime_list, variables['flight_index'][1])
+                flight_2_arrtime = FlightSearch.get_info_for_index(flight_2_arrtime_list, variables['flight_index'][2])
+driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Atlanta', variables['city'][0], 'Duration')
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], variables['city'][1], 'Duration')
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][1], 'Atlanta', 'Duration')
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'St. Petersburg', variables['city'][0], 'Duration')
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, variables['city'][0], 'St. Petersburg', 'Duration')
+cities = ['San Francisco', 'Los Angeles', 'San Diego']
+for city_0_index, city_0 in enumerate(cities):
+    for city_1_index, city_1 in enumerate(cities):
+        for city_2_index, city_2 in enumerate(cities):
+            s = Optimize()
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            if city_0_index != city_1_index and city_1_index != city_2_index and city_0_index != city_2_index:
+                s.assert_and_track(variables['city'][0] == city_0_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][1] == city_1_index, 'visit city in cities list')
+                s.assert_and_track(variables['city'][2] == city_2_index, 'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_0'), Int('departure_dates_transportation_1')]
+                s.assert_and_track(variables['departure_dates'][0] >= 0, 'first departure at least 0')
+                s.assert_and_track(variables['departure_dates'][0] <= 5, 'first departure at most 5')
+                s.assert_and_track(variables['departure_dates'][1] >= variables['departure_dates'][0] + 1, 'second departure after first')
+                s.assert_and_track(variables['departure_dates'][1] <= 5, 'second departure at most 5')

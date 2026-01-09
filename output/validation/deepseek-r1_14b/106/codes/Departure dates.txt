@@ -1,0 +1,4 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(3)]
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'first transportation on day 0')
+                s.assert_and_track(variables['departure_dates'][2] == 6, 'last transportation on day 6')
+                s.assert_and_track(And(variables['departure_dates'][1] > 0, variables['departure_dates'][1] < 6), 'valid intermediate departure date')

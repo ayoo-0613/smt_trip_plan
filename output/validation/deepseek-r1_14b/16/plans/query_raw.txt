@@ -1,0 +1,32 @@
+<think>
+Alright, I need to extract information from the given text and structure it into JSON as per the examples provided.
+
+First, identify "org" which is the departure city: Spokane.
+Next, "dest" is San Francisco.
+The trip spans 3 days, so "days": 3.
+Since days are exactly 3, "visiting_city_number" should be 1.
+Extracting the dates from March 3rd to March 5th, I'll format them as ["2022-03-03", "2022-03-04", "2022-03-05"].
+The trip is for 1 person, so "people_number": 1.
+Looking for local constraints: the text doesn't mention any house rules, cuisine preferences, room type, or transportation restrictions. Therefore, all local constraints will be null.
+Finally, the budget is $1,200.
+
+I'll structure this into JSON accordingly, ensuring all fields are correctly filled and only necessary information is included without adding anything extra.
+</think>
+
+```json
+{
+    "org": "Spokane", 
+    "dest": "San Francisco", 
+    "days": 3, 
+    "visiting_city_number": 1, 
+    "date": ["2022-03-03", "2022-03-04", "2022-03-05"], 
+    "people_number": 1, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": null, 
+        "transportation": null
+    }, 
+    "budget": 1200
+}
+```

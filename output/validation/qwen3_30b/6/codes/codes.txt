@@ -1,0 +1,12 @@
+... code ...
+variables['departure_dates'] = [Int('departure_dates_transportation_0')]
+    s.assert_and_track(variables['departure_dates'][0] >= 0, 'departure date must be at least 0')
+    s.assert_and_track(variables['departure_dates'][0] <= 6, 'departure date must be at most 6')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+cities = ['Milwaukee']
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]
+    s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+    s.assert_and_track(variables['departure_dates'][1] > 0, 'valid travel date')
+cities = ['San Diego']
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(2)]

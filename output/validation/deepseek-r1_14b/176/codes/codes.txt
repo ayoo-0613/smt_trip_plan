@@ -1,0 +1,185 @@
+# Set cities to be a list includes three cities in Georgia (e.g., Atlanta, Savannah, Athens)  
+cities = ['Atlanta', 'Savannah', 'Athens']  
+
+# Loop through cities for 3 destination cities  
+for city_0_index, city_0 in enumerate(cities):  
+    for city_1_index, city_1 in enumerate(cities):  
+        for city_2_index, city_2 in enumerate(cities):  
+            # Initialize Z3 solver s  
+            s = Optimize()  
+            # Set 'city' variable to be indexes of 3 destination cities  
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]  
+            # Assert 'city' variables equal to respective city indexes  
+            s.assert_and_track(variables['city'][0] == city_0_index,  'visit city in cities list')  
+            s.assert_and_track(variables['city'][1] == city_1_index,  'visit city in cities list')  
+            s.assert_and_track(variables['city'][2] == city_2_index,  'visit city in cities list')
+variables['departure_dates'] = [Int('departure_dates_transportation_' + str(i)) for i in range(4)]
+                s.assert_and_track(variables['departure_dates'][0] == 0, 'travel start date')
+                s.assert_and_track(variables['departure_dates'][3] == 6, 'travel end date')
+                s.assert_and_track(And(variables['departure_dates'][1] > variables['departure_dates'][0], 
+                                       variables['departure_dates'][1] < variables['departure_dates'][2]), 
+                                   'valid travel date')
+                s.assert_and_track(And(variables['departure_dates'][2] > variables['departure_dates'][1], 
+                                       variables['departure_dates'][2] < variables['departure_dates'][3]), 
+                                   'valid travel date')
+variables['self-driving'] = [Bool('self-driving_' + str(i)) for i in range(4)]
+                variables['taxi'] = [Bool('taxi_' + str(i)) for i in range(4)]
+                # Assert only self-driving or taxi is used for all transportations
+                s.assert_and_track(Or(variables['self-driving'][0], variables['taxi'][0]), 'either self-driving or taxi for first transportation')
+                s.assert_and_track(Or(variables['self-driving'][1], variables['taxi'][1]), 'either self-driving or taxi for second transportation')
+                s.assert_and_track(Or(variables['self-driving'][2], variables['taxi'][2]), 'either self-driving or taxi for third transportation')
+                s.assert_and_track(Or(variables['self-driving'][3], variables['taxi'][3]), 'either self-driving or taxi for fourth transportation')
+                # Assert no flights are taken
+                variables['flight'] = [Bool('flight_' + str(i)) for i in range(4)]
+                s.assert_and_track(Not(variables['flight'][0]), 'no flight for first transportation')
+                s.assert_and_track(Not(variables['flight'][1]), 'no flight for second transportation')
+                s.assert_and_track(Not(variables['flight'][2]), 'no flight for third transportation')
+                s.assert_and_track(Not(variables['flight'][3]), 'no flight for fourth transportation')
+# Run DistanceSearch to get driving info for Chattanooga as origin and each city in Georgia  
+                driving_info = DistanceSearch.run_for_all_cities('Chattanooga', cities, [city_0, city_1, city_2, city_3])  # use driving_info, do not customize  
+                
+                # Get specific driving distance info with Chattanooga as origin and final destination, specific city, and departure date for 4 transportations  
+                driving_0_distance, driving_0_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][0], 'Distance')  
+                driving_1_distance, driving_1_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][1], 'Distance')  
+                driving_2_distance, driving_2_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][2], 'Distance')  
+                driving_3_distance, driving_3_length = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][3], 'Distance')  
+                
+                # Calculate self-driving and taxi price for 2 people and 4 transportations based on driving distance  
+                self_driving_0_price = 0.05 * driving_0_distance * math.ceil(2 / 5)  
+                self_driving_1_price = 0.05 * driving_1_distance * math.ceil(2 / 5)  
+                self_driving_2_price = 0.05 * driving_2_distance * math.ceil(2 / 5)  
+                self_driving_3_price = 0.05 * driving_3_distance * math.ceil(2 / 5)  
+                
+                taxi_0_price = driving_0_distance * math.ceil(2 / 4)  
+                taxi_1_price = driving_1_distance * math.ceil(2 / 4)  
+                taxi_2_price = driving_2_distance * math.ceil(2 / 4)  
+                taxi_3_price = driving_3_distance * math.ceil(2 / 4)  
+                
+                # Get driving arrival time with Chattanooga as origin and final destination, specific city, and departure date for each transportation  
+                driving_0_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][0], 'Duration')  # Use driving_0_arrtime, do not customize  
+                driving_1_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][1], 'Duration')  # Use driving_1_arrtime, do not customize  
+                driving_2_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][2], 'Duration')  # Use driving_2_arrtime, do not customize  
+                driving_3_arrtime, _ = DistanceSearch.get_info(driving_info, 'Chattanooga', variables['city'][3], 'Duration')  # Use driving_3_arrtime, do not customize
+# Get arrivals and city list for each day based on 4 transportations, 7 total travel days, and departure dates variables
+                transportation_0_arrtime = If(variables['flight'][0], flight_0_arrtime, driving_0_arrtime)
+                transportation_1_arrtime = If(variables['flight'][1], flight_1_arrtime, driving_1_arrtime)
+                transportation_2_arrtime = If(variables['flight'][2], flight_2_arrtime, driving_2_arrtime)
+                transportation_3_arrtime = If(variables['flight'][3], flight_3_arrtime, driving_3_arrtime)
+                arrives = get_arrivals_list([transportation_0_arrtime, transportation_1_arrtime, transportation_2_arrtime, transportation_3_arrtime], 7, variables['departure_dates'])
+                city_list = get_city_list(variables['city'], 7, variables['departure_dates'])
+                
+                # Run RestaurantSearch to get restaurant price info and cuisine info for each city in Georgia
+                cities_in_georgia = ['Atlanta', 'Savannah', 'Athens', 'Orlando']  # Example list of cities in Georgia
+                restaurant_price, restaurant_cuisines = RestaurantSearch.run_for_all_cities(cities_in_georgia)
+                
+                # Set 'restaurant_in_which_city' variables for 21 (3 meals per day *7 days) meals
+                variables['restaurant_in_which_city'] = [Int('restaurant_' + str(i)) for i in range(3*7)]
+                
+                # For each 'restaurant_in_which_city' variable, assert it to be either current city or next city based on transportation arrivals time
+                for i, variable in enumerate(variables['restaurant_in_which_city']):
+                    date_index = i // 3
+                    meal_index = i % 3
+                    if meal_index == 0:  # breakfast
+                        s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city b')
+                        s.assert_and_track(Implies(arrives[date_index] > 10, variable == city_list[date_index]), 'eat in which city b')
+                        s.assert_and_track(Implies(arrives[date_index] < 5, variable == city_list[date_index+1]), 'eat in which city b')
+                    if meal_index == 1:  # lunch
+                        s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city l')
+                        s.assert_and_track(Implies(arrives[date_index] > 15, variable == city_list[date_index]), 'eat in which city l')
+                        s.assert_and_track(Implies(arrives[date_index] < 10, variable == city_list[date_index+1]), 'eat in which city l')
+                    if meal_index == 2:  # dinner
+                        s.assert_and_track(Or(variable == city_list[date_index], variable == city_list[date_index+1]), 'eat in which city d')
+                        s.assert_and_track(Implies(arrives[date_index] > 22, variable == city_list[date_index]), 'eat in which city d')
+                        s.assert_and_track(Implies(arrives[date_index] < 17, variable == city_list[date_index+1]), 'eat in which city d')
+                
+                # Set 'restaurant_index' variables for 21 (3 meals per day *7 days) meals
+                variables['restaurant_index'] = [Int('restaurant_{}_index'.format(i)) for i in range(3*7)]
+                
+                # For each 'restaurant_index', get specific price info based on 'restaurant_in_which_city' variable, assert index are within valid range, assert restaurants in same city are not repeated, and calculate restaurant price for 2 people
+                all_restaurant_price = 0
+                for i, variable in enumerate(variables['restaurant_index']):
+                    restaurant_price_list, restaurant_list_length = RestaurantSearch.get_info(restaurant_price, variables['restaurant_in_which_city'][i], 'Price')
+                    s.assert_and_track(Implies(variables['restaurant_in_which_city'][i] != -1, And(variable >= 0, variable < restaurant_list_length)), 'valid restaurant index')
+                    s.assert_and_track(Implies(variables['restaurant_in_which_city'][i] == -1, variable == -1), 'valid restaurant index')
+                    for j in range(i-1, -1, -1):
+                        s.assert_and_track(Implies(And(variables['restaurant_in_which_city'][i] != -1, variables['restaurant_in_which_city'][i] == variables['restaurant_in_which_city'][j]), variable != variables['restaurant_index'][j]), 'non repeating restaurant index')
+                    # Calculate restaurant price based on restaurant index
+                    all_restaurant_price += 2 * If(variables['restaurant_in_which_city'][i] != -1, RestaurantSearch.get_info_for_index(restaurant_price_list, variable), 0)
+                
+                # Set 'cuisine_type' variables for American cuisine required
+                variables['cuisines_type'] = [Int('cuisines_American')]
+                
+                # For each cuisine type, iterate through all restaurant to check if it is satisfied
+                for index, cuisine in enumerate(['American']):
+                    count = 0
+                    for i, variable in enumerate(variables['restaurant_index']):
+                        restaurant_cuisines_list, _ = RestaurantSearch.get_info(restaurant_cuisines, variables['restaurant_in_which_city'][i], 'Cuisines')
+                        count += If(RestaurantSearch.check_exists(cuisine, restaurant_cuisines_list, variable), 1, 0)
+                    s.assert_and_track(variables['cuisines_type'][index] == count, cuisine + 'type restaurant')
+                    s.assert_and_track(variables['cuisines_type'][index] > 0, cuisine + 'type restaurant is visited')
+attraction_info = AttractionSearch.run_for_all_cities(cities, cities_in_georgia)
+                variables['attraction_in_which_city'] = [Int('attraction_' + str(i)) for i in range(1*7)]
+                for i, variable in enumerate(variables['attraction_in_which_city']):
+                    s.assert_and_track(variable == If(arrives[i] > 18, city_list[i], city_list[i+1]), 'attraction in which city')
+                variables['attraction_index'] = [Int('attraction_{}_index'.format(i)) for i in range(1*7)]
+                for i, variable in enumerate(variables['attraction_index']):
+                    attraction_list_length = AttractionSearch.get_info(attraction_info, variables['attraction_in_which_city'][i])
+                    s.assert_and_track(Implies(variables['attraction_in_which_city'][i] != -1, And(variable >= 0, variable < attraction_list_length)), 'valid attraction index')
+                    s.assert_and_track(Implies(variables['attraction_in_which_city'][i] == -1, variable == -1), 'valid attraction index')
+                    for j in range(i-1, -1, -1):
+                        s.assert_and_track(Implies(And(variables['attraction_in_which_city'][i] != -1, variables['attraction_in_which_city'][i] == variables['attraction_in_which_city'][j]), variable != variables['attraction_index'][j]), 'non repeating attraction index')
+# Run AccommodationSearch to get accommodation info and accommodation constraints for each city in Georgia
+                accommodation_info, accommodation_constraints = AccommodationSearch.run_for_all_cities(cities, all_georgia_cities) 
+                
+                # Set 'accommodation_index' variables for 3 (1 per city) accommodations 
+                variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(3)]
+                
+                # For each 'accommodation_index', get specific price info based on accommodation in which city variable, assert 'accommodation_index' variable are within valid range, calculate number of room need for 2 people and accommodation price
+                all_accommodation_price = 0
+                for i, variable in enumerate(variables['accommodation_index']):
+                    accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+                    s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for city {variables["city"][i]}')
+                    accommodation_maximum_occupancy_list, _ = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Maximum_occupancy')
+                    num_room = convert_to_int(RealVal(2) / AccommodationSearch.get_info_for_index(accommodation_maximum_occupancy_list, variable))
+                    all_accommodation_price += (variables['departure_dates'][i+1] - variables['departure_dates'][i]) * num_room * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+                
+                # For each city, get accommodation minimum night info and assert it to be less than the days stay in this city
+                for index, city in enumerate(variables['city']):
+                    accommodation_minimum_nights_list, _ = AccommodationSearch.get_info(accommodation_info, city, 'Minimum_nights')
+                    minimum_night = AccommodationSearch.get_info_for_index(accommodation_minimum_nights_list, variables['accommodation_index'][index])
+                    s.assert_and_track(minimum_night <= variables['departure_dates'][index+1] - variables['departure_dates'][index], f'minimum nights satisfied for city {city}')
+                
+                # For each 'accommodation_index', get specific room type and house rules info, assert 'Private room' exist for all accommodations, assert 'No children under 10' does not exist for all accommodations
+                for i, variable in enumerate(variables['accommodation_index']):
+                    accommodation_room_types_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'Room_types')
+                    accommodation_house_rules_list, _ = AccommodationSearch.get_info(accommodation_constraints, variables['city'][i], 'House_rules')
+                    s.assert_and_track(AccommodationSearch.check_exists('Private room', accommodation_room_types_list, variable) == True, f'Private room types accommodation visited for city {variables["city"][i]}')
+                    s.assert_and_track(AccommodationSearch.check_exists('No children under 10', accommodation_house_rules_list, variable) == False, f'No children under 10 rules accommodation not visited for city {variables["city"][i]}')
+# Set budget limit variable to be 6800  
+                variables['budget_limit'] = RealVal(6800)
+                # Add 4 transportation price to spent, according to whether transportation method is self-driving or taxi
+                spent = 0
+                spent += If(variables['self-driving'][0], self_driving_0_price, taxi_0_price)
+                spent += If(variables['self-driving'][1], self_driving_1_price, taxi_1_price)
+                spent += If(variables['self-driving'][2], self_driving_2_price, taxi_2_price)
+                spent += If(variables['self-driving'][3], self_driving_3_price, taxi_3_price)
+                # Add restaurant price to spent
+                spent += all_restaurant_price
+                # Add accommodation price to spent
+                spent += all_accommodation_price
+                # Assert current spent is within budget
+                s.assert_and_track(spent <= variables['budget_limit'], 'budget enough')
+                if s.check() == sat:
+                    print('ok')
+                    plan = generate_as_plan(s, variables, query_json)
+                    with open(path+'plans/' + 'plan.txt', 'w') as f:
+                        f.write(plan)
+                    f.close()
+                    success = True
+                    break
+                else:
+                    print('not ok')
+                    c = s.unsat_core()
+                    print(c)
+        if success: break
+    if success: break

@@ -1,0 +1,15 @@
+# Define the list of cities
+cities = ['Austin', 'Houston', 'San Antonio']
+
+# Loop through all possible combinations of city indices for three cities
+for city_0_index, _ in enumerate(cities):
+    for city_1_index, _ in enumerate(cities):
+        for city_2_index, _ in enumerate(cities):
+            # Initialize the solver for each combination
+            s = Optimize()
+            # Set up variables for the three cities' indices
+            variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+            # Assert that each variable equals its respective index
+            s.assert_and_track(variables['city'][0] == city_0_index, '')
+            s.assert_and_track(variables['city'][1] == city_1_index, '')
+            s.assert_and_track(variables['city'][2] == city_2_index, '')

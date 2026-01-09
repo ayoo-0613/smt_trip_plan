@@ -1,0 +1,39 @@
+# Run FlightSearch to get flight info for Rapid City as origin, list of cities, city_0, city_1, city_2, and dates ["2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17"]
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Rapid City', cities, [city_0, city_1, city_2], ["2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16", "2022-03-17"])  # use flight_info, do not customize
+                
+                # Get specific flight price info with Rapid City as origin and final destination, specific city, and departure date for 4 transportations
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Rapid City', variables['city'][0], variables['departure_dates'][0], 'Price')
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'Price')
+                flight_2_price_list, flight_2_price_list_length = FlightSearch.get_info(flight_info, variables['city'][1], variables['city'][2], variables['departure_dates'][2], 'Price')
+                flight_3_price_list, flight_3_price_list_length = FlightSearch.get_info(flight_info, variables['city'][2], 'Rapid City', variables['departure_dates'][3], 'Price')
+                
+                # Set 'flight_index' variable for 4 transportations
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(4)]
+                
+                # Assert 4 'flight_index' variables are within valid range if taking flight, assert flight index to be -1 if not taking flight
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0,variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0,variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(variables['flight'][2], And(variables['flight_index'][2] >= 0,variables['flight_index'][2] < flight_2_price_list_length)), 'valid flight index for flight 2')
+                s.assert_and_track(Implies(variables['flight'][3], And(variables['flight_index'][3] >= 0,variables['flight_index'][3] < flight_3_price_list_length)), 'valid flight index for flight 3')
+                s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(Not(variables['flight'][1]), variables['flight_index'][1] == -1), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(Not(variables['flight'][2]), variables['flight_index'][2] == -1), 'valid flight index for flight 2')
+                s.assert_and_track(Implies(Not(variables['flight'][3]), variables['flight_index'][3] == -1), 'valid flight index for flight 3')
+                
+                # Calculate flight price for 7 people for 4 transportations based on flight index variable
+                flight_0_price = 7 * FlightSearch.get_info_for_index(flight_0_price_list, variables['flight_index'][0])
+                flight_1_price = 7 * FlightSearch.get_info_for_index(flight_1_price_list, variables['flight_index'][1])
+                flight_2_price = 7 * FlightSearch.get_info_for_index(flight_2_price_list, variables['flight_index'][2])
+                flight_3_price = 7 * FlightSearch.get_info_for_index(flight_3_price_list, variables['flight_index'][3])
+                
+                # Get specific flight arrival time info with Rapid City as origin and final destination, specific city, and departure date for 4 transportations
+                flight_0_arrtime_list, _ = FlightSearch.get_info(flight_info, 'Rapid City', variables['city'][0], variables['departure_dates'][0], 'ArrTime')
+                flight_1_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'ArrTime')
+                flight_2_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][1], variables['city'][2], variables['departure_dates'][2], 'ArrTime')
+                flight_3_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][2], 'Rapid City', variables['departure_dates'][3], 'ArrTime')
+                
+                # Calculate flight arrival time for 4 transportations based on flight index variable
+                flight_0_arrtime = FlightSearch.get_info_for_index(flight_0_arrtime_list, variables['flight_index'][0])
+                flight_1_arrtime = FlightSearch.get_info_for_index(flight_1_arrtime_list, variables['flight_index'][1])
+                flight_2_arrtime = FlightSearch.get_info_for_index(flight_2_arrtime_list, variables['flight_index'][2])
+                flight_3_arrtime = FlightSearch.get_info_for_index(flight_3_arrtime_list, variables['flight_index'][3])

@@ -1,0 +1,14 @@
+cities = ['Denver', 'Boulder', 'Aspen']
+for city_index in range(len(cities)):
+    s = Optimize()
+    variables['city'] = [Int('city_' + str(i)) for i in range(3)]
+    s.assert_and_track(variables['city'][0] == 0, 'valid city index')
+    s.assert_and_track(variables['city'][1] == 1, 'valid city index')
+    s.assert_and_track(variables['city'][2] == 2, 'valid city index')
+    if variables['city'][0] != variables['city'][1]:
+        s.assert_and_track(variables['city'][0] != variables['city'][1], 'distinct cities')
+    if variables['city'][0] != variables['city'][2]:
+        s.assert_and_track(variables['city'][0] != variables['city'][2], 'distinct cities')
+    if variables['city'][1] != variables['city'][2]:
+        s.assert_and_track(variables['city'][1] != variables['city'][2], 'distinct cities')
+    print(s.check())

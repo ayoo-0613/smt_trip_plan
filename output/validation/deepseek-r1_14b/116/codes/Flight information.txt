@@ -1,0 +1,40 @@
+# Run FlightSearch for Provo -> city1
+                flight_info = FlightSearch.run_for_all_cities_and_dates('Provo', cities, [city_0], ["2022-03-16", "2022-03-17", "2022-03-18"]) # use flight_info, do not customize
+                # Run FlightSearch for city1 -> city2
+                flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][0], cities, [city_1], ["2022-03-16", "2022-03-17", "2022-03-18"]) # use flight_info, do not customize
+                # Run FlightSearch for city2 -> city3
+                flight_info = FlightSearch.run_for_all_cities_and_dates(variables['city'][1], cities, [city_2], ["2022-03-16", "2022-03-17", "2022-03-18"]) # use flight_info, do not customize
+                
+                # Get specific flight price info for Provo -> city1
+                flight_0_price_list, flight_0_price_list_length = FlightSearch.get_info(flight_info, 'Provo', variables['city'][0], variables['departure_dates'][0], 'Price')
+                # Get specific flight price info for city1 -> city2
+                flight_1_price_list, flight_1_price_list_length = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'Price')
+                # Get specific flight price info for city2 -> city3
+                flight_2_price_list, flight_2_price_list_length = FlightSearch.get_info(flight_info, variables['city'][1], variables['city'][2], variables['departure_dates'][2], 'Price')
+                
+                # Set 'flight_index' variable for 3 transportations
+                variables['flight_index'] = [Int('flight_{}_index'.format(i)) for i in range(3)]
+                
+                # Assert flight index constraints
+                s.assert_and_track(Implies(variables['flight'][0], And(variables['flight_index'][0] >= 0, variables['flight_index'][0] < flight_0_price_list_length)), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(variables['flight'][1], And(variables['flight_index'][1] >= 0, variables['flight_index'][1] < flight_1_price_list_length)), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(variables['flight'][2], And(variables['flight_index'][2] >= 0, variables['flight_index'][2] < flight_2_price_list_length)), 'valid flight index for flight 2')
+                
+                s.assert_and_track(Implies(Not(variables['flight'][0]), variables['flight_index'][0] == -1), 'valid flight index for flight 0')
+                s.assert_and_track(Implies(Not(variables['flight'][1]), variables['flight_index'][1] == -1), 'valid flight index for flight 1')
+                s.assert_and_track(Implies(Not(variables['flight'][2]), variables['flight_index'][2] == -1), 'valid flight index for flight 2')
+                
+                # Calculate flight prices
+                flight_0_price = 2 * FlightSearch.get_info_for_index(flight_0_price_list, variables['flight_index'][0])
+                flight_1_price = 2 * FlightSearch.get_info_for_index(flight_1_price_list, variables['flight_index'][1])
+                flight_2_price = 2 * FlightSearch.get_info_for_index(flight_2_price_list, variables['flight_index'][2])
+                
+                # Get arrival times
+                flight_0_arrtime_list, _ = FlightSearch.get_info(flight_info, 'Provo', variables['city'][0], variables['departure_dates'][0], 'ArrTime')
+                flight_1_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][0], variables['city'][1], variables['departure_dates'][1], 'ArrTime')
+                flight_2_arrtime_list, _ = FlightSearch.get_info(flight_info, variables['city'][1], variables['city'][2], variables['departure_dates'][2], 'ArrTime')
+                
+                # Assign arrival times
+                flight_0_arrtime = FlightSearch.get_info_for_index(flight_0_arrtime_list, variables['flight_index'][0])
+                flight_1_arrtime = FlightSearch.get_info_for_index(flight_1_arrtime_list, variables['flight_index'][1])
+                flight_2_arrtime = FlightSearch.get_info_for_index(flight_2_arrtime_list, variables['flight_index'][2])

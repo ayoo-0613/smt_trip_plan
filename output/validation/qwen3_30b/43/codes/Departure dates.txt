@@ -1,0 +1,5 @@
+variables['departure_dates'] = [Int('departure_dates_transportation_0'), Int('departure_dates_transportation_1')]
+                s.assert_and_track(variables['departure_dates'][0] >= 0, 'first departure at least 0')
+                s.assert_and_track(variables['departure_dates'][0] <= 5, 'first departure at most 5')
+                s.assert_and_track(variables['departure_dates'][1] >= variables['departure_dates'][0] + 1, 'second departure after first')
+                s.assert_and_track(variables['departure_dates'][1] <= 5, 'second departure at most 5')

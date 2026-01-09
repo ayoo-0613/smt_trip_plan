@@ -1,0 +1,35 @@
+<think>
+Alright, let's tackle this query step by step. The user wants me to extract information from a given text and structure it into JSON as per their instructions. First, I'll read the example they provided to understand exactly what they're looking for.
+
+Looking at Example 1, I see that "org" is the departure city, "dest" is where they're going, "days" is the total travel days, and if days exceed 3, "visiting_city_number" comes into play. The date field needs to be an array of dates in YYYY-MM-DD format. Then there's "people_number", which seems straightforward.
+
+The tricky part is handling the "local_constraint". It has four possible constraints: house rule, cuisine, room type, and transportation. Each can have specific options or null if not mentioned. I need to make sure that only the mentioned ones are included; others should be null.
+
+Now, looking at the provided text: it's a 3-day trip from Panama City to Nashville starting March 23rd to 25th for two people with a budget of $2900. They mention not wanting shared rooms but don't specify other constraints like cuisine or transportation preferences.
+
+So, I'll start by extracting the departure city as "Panama City" and destination as "Nashville". The days are 3, so visiting_city_number isn't needed here since it's only applicable when days exceed 3. Dates will be March 23rd, 24th, and 25th in the correct format.
+
+Next, people_number is 2. For local constraints, they specified "not shared room" under house type, so that goes into room type as "not shared room". Since there's no mention of parties, smoking, children, or pets, those are null. Cuisine isn't mentioned either, so that's null too. Transportation wasn't discussed, so it remains null.
+
+Budget is $2900, which I'll include as an integer without the dollar sign. 
+
+I need to make sure all fields are present and only necessary constraints are filled. Let me double-check each part against the examples to ensure consistency.
+</think>
+
+```json
+{
+    "org": "Panama City", 
+    "dest": "Nashville", 
+    "days": 3, 
+    "visiting_city_number": null, 
+    "date": ["2022-03-23", "2022-03-24", "2022-03-25"], 
+    "people_number": 2, 
+    "local_constraint": {
+        "house rule": null, 
+        "cuisine": null, 
+        "room type": "not shared room", 
+        "transportation": null
+    }, 
+    "budget": 2900
+}
+```

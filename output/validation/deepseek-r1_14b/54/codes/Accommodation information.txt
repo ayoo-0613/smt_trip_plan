@@ -1,0 +1,19 @@
+# Run AccommodationSearch to get accommodation info for each city in Texas  
+                cities_in_texas = [city for city in cities if city.state == 'Texas'] 
+                accommodation_info, _ = AccommodationSearch.run_for_all_cities(cities, cities_in_texas) 
+                
+                # Set 'accommodation_index' variables for 3 (1 per city) accommodations
+                variables['accommodation_index'] = [Int('accommodation_{}_index'.format(i)) for i in range(3)]
+                
+                # For each 'accommodation_index', get specific price info based on selected cities, calculate number of rooms needed and total accommodation cost 
+                all_accommodation_price = 0
+                for i, variable in enumerate(variables['accommodation_index']):
+                    accommodation_price_list, accommodation_list_length = AccommodationSearch.get_info(accommodation_info, variables['city'][i], 'Price')
+                    s.assert_and_track(And(variable >= 0, variable < accommodation_list_length), f'valid accommodation index for city {variables["city"][i]}')
+                    num_room = convert_to_int(RealVal(2) / AccommodationSearch.get_info_for_index(accommodation_info[variables["city"][i]]['Maximum_occupancy'], variable))
+                    all_accommodation_price += (variables['departure_dates'][i+1] - variables['departure_dates'][i]) * num_room * AccommodationSearch.get_info_for_index(accommodation_price_list, variable)
+                
+                # For each city, assert minimum night stay requirements are met 
+                for index, city in enumerate(variables['city']):
+                    accommodation_minimum_nights = AccommodationSearch.get_info_for_index(accommodation_info[city]['Minimum_nights'], variables['accommodation_index'][index])
+                    s.assert_and_track(accommodation_minimum_nights <= variables['departure_dates'][index+1] - variables['departure_dates'][index], f'minimum nights satisfied for {city}')
