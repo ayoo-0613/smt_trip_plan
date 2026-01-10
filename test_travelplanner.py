@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "../tools/planner")))
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import importlib
 import ast
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import tiktoken
 from pandas import DataFrame
 from utils.func import load_line_json_data, save_file
@@ -317,7 +317,18 @@ def generate_as_plan(s, variables, query):
     print(accommodation_city_list)
     return f'Destination cities: {cities},\nTransportation dates: {departure_dates},\nTransportation methods between cities: {transportation_info},\nRestaurants (3 meals per day): {restaurant_city_list},\nAttractions (1 per day): {attraction_city_list},\nAccommodations (1 per city): {accommodation_city_list}'
 
-def pipeline(query, mode, model, index, model_version = None, model_dir = None, *, allow_remote: bool = False):
+def pipeline(
+    query,
+    mode,
+    model,
+    index,
+    model_version=None,
+    model_dir=None,
+    *,
+    allow_remote: bool = False,
+    llm_timeout: float = 999,
+    llm_max_tokens: Optional[int] = None,
+):
     # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
     model_dir = model_dir or model
     model_type = model if model in MODEL_TYPES else "local"
@@ -398,15 +409,22 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None, 
     
     try:
         # json generated for postprocess only, not used in inputs to LLMs
+        print(f"[LLM] Query->JSON model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
         if model_type == 'local':
             raw_query_json = Local_response(
                 query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n',
                 model_name=llm_model_name,
+                timeout=llm_timeout,
+                max_tokens=llm_max_tokens,
             )
         elif model_type == 'gpt':
-            raw_query_json = GPT_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', llm_model_name)
+            raw_query_json = GPT_response(
+                query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n',
+                llm_model_name,
+                timeout=llm_timeout,
+            )
         elif model_type == 'claude':
-            raw_query_json = Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n')
+            raw_query_json = Claude_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', timeout=llm_timeout)
             query_json = json.loads(raw_query_json.replace('```json', '').replace('```', ''))
         elif model_type == 'mixtral':
             raw_query_json = Mixtral_response(query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n', 'json')
@@ -426,7 +444,12 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None, 
                         query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n'
                         + '\nReturn ONLY a valid JSON object. No markdown, no explanation.'
                     )
-                    raw_retry = Local_response(retry_prompt, model_name=llm_model_name)
+                    raw_retry = Local_response(
+                        retry_prompt,
+                        model_name=llm_model_name,
+                        timeout=llm_timeout,
+                        max_tokens=llm_max_tokens,
+                    )
                     with open(path+'plans/' + 'query_raw_retry.txt', 'w') as f:
                         f.write(raw_retry or '')
                     f.close()
@@ -444,14 +467,17 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None, 
 
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
+        print(f"[LLM] Constraint->Steps model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
         if model_type == 'local':
             steps = Local_response(
                 constraint_to_step_prompt + query + '\n' + 'Steps:\n',
                 model_name=llm_model_name,
+                timeout=llm_timeout,
+                max_tokens=llm_max_tokens,
             )
         elif model_type == 'gpt':
-            steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name)
-        elif model_type == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
+            steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name, timeout=llm_timeout)
+        elif model_type == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', timeout=llm_timeout)
         elif model_type == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
         json_step = time.time()
@@ -506,12 +532,13 @@ def pipeline(query, mode, model, index, model_version = None, model_dir = None, 
             lines = body  # 下面继续沿用原先逻辑
 
             start = time.time()
+            print(f"[LLM] Step->Code step={step_key} model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
             if model_type == 'local':
-                code = Local_response(prompt + lines, model_name=llm_model_name)
+                code = Local_response(prompt + lines, model_name=llm_model_name, timeout=llm_timeout, max_tokens=llm_max_tokens)
             elif model_type == 'gpt':
-                code = GPT_response(prompt + lines, llm_model_name)
+                code = GPT_response(prompt + lines, llm_model_name, timeout=llm_timeout)
             elif model_type == 'claude':
-                code = Claude_response(prompt + lines)
+                code = Claude_response(prompt + lines, timeout=llm_timeout)
             elif model_type == 'mixtral':
                 code = Mixtral_response(
                     prompt + '\nRespond with python codes only, do not add \\ in front of symbols like _ or *.\n'
@@ -598,6 +625,18 @@ if __name__ == '__main__':
         action="store_true",
         help="Allow remote providers like 'gpt'/'claude'/'mixtral' (default: local-only).",
     )
+    parser.add_argument(
+        "--llm_timeout",
+        type=float,
+        default=float(os.environ.get("LLM_TIMEOUT", "999")),
+        help="LLM request timeout in seconds (default: 999).",
+    )
+    parser.add_argument(
+        "--llm_max_tokens",
+        type=int,
+        default=int(os.environ.get("LLM_MAX_TOKENS", "0")),
+        help="Max tokens for a single LLM response (0 means no limit).",
+    )
     args = parser.parse_args()
 
     if args.set_type == 'validation':
@@ -614,16 +653,29 @@ if __name__ == '__main__':
 
     numbers = [i for i in range(1, len(query_data_list) + 1)]
     resolved_model_name = OLLAMA_MODEL_ALIASES.get(args.model_name, args.model_name)
-    default_model_version = (
-    'gpt-4o'
-    if args.model_name == 'gpt' else
-    'local'
-    if args.model_name == 'local' else
-    'claude-3-opus-20240229'
-    if args.model_name == 'claude' else
-    None
-    )
-    model_dir = _safe_model_dir(resolved_model_name)
+
+    if args.model_name == 'gpt':
+        model_for_pipeline = 'gpt'
+        model_version = 'gpt-4o'
+        model_dir_name = 'gpt'
+    elif args.model_name == 'claude':
+        model_for_pipeline = 'claude'
+        model_version = 'claude-3-opus-20240229'
+        model_dir_name = 'claude'
+    elif args.model_name == 'mixtral':
+        model_for_pipeline = 'mixtral'
+        model_version = 'mistral-large-latest'
+        model_dir_name = 'mixtral'
+    elif args.model_name == 'local':
+        model_for_pipeline = _resolve_local_model_name('local')
+        model_version = None
+        model_dir_name = model_for_pipeline
+    else:
+        model_for_pipeline = resolved_model_name
+        model_version = None
+        model_dir_name = resolved_model_name
+
+    model_dir = _safe_model_dir(model_dir_name)
     for number in tqdm(numbers[:]):
         path = f'output/{args.set_type}/{model_dir}/{number}/plans/'
         if not os.path.exists(path + 'plan.txt'):
@@ -633,9 +685,11 @@ if __name__ == '__main__':
             pipeline(
                 query,
                 args.set_type,
-                resolved_model_name,
+                model_for_pipeline,
                 number,
-                default_model_version,
+                model_version,
                 model_dir,
                 allow_remote=args.allow_remote,
+                llm_timeout=args.llm_timeout,
+                llm_max_tokens=(None if args.llm_max_tokens <= 0 else args.llm_max_tokens),
             )
