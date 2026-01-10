@@ -140,6 +140,42 @@ def _filter_step_blocks(steps_text: str) -> list:
             blocks.append("\n".join(lines))
     return blocks
 
+def _split_steps_by_known_headers(steps_text: str, known_headers: list) -> list:
+    if not steps_text:
+        return []
+    key_set = {str(k).strip() for k in known_headers if str(k).strip()}
+    if not key_set:
+        return []
+
+    header_re = re.compile(
+        r"^\s*(?:#+\s*)?(?P<key>"
+        + "|".join(re.escape(k) for k in sorted(key_set, key=len, reverse=True))
+        + r")\s*(?:#+\s*)?$",
+        flags=re.IGNORECASE,
+    )
+
+    blocks = []
+    current_key = None
+    current_lines = []
+    for raw_line in (steps_text or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        line_no_hash = line.strip("#").strip()
+        match = header_re.match(line_no_hash)
+        if match:
+            if current_key and current_lines:
+                blocks.append("# " + current_key + " #\n" + "\n".join(current_lines))
+            current_key = match.group("key")
+            current_lines = []
+            continue
+        if current_key:
+            current_lines.append(raw_line if raw_line.lstrip().startswith("#") else "# " + raw_line.strip())
+
+    if current_key and current_lines:
+        blocks.append("# " + current_key + " #\n" + "\n".join(current_lines))
+    return blocks
+
 
 def _safe_literal_eval(value):
     if pd.isna(value):
@@ -407,9 +443,11 @@ def pipeline(
         raise ValueError(f"Unknown model type: {model}")
 
     
+    stage = "start"
     try:
         # json generated for postprocess only, not used in inputs to LLMs
         print(f"[LLM] Query->JSON model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+        stage = "query_to_json"
         if model_type == 'local':
             raw_query_json = Local_response(
                 query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n',
@@ -437,9 +475,11 @@ def pipeline(
                 f.write(raw_query_json or '')
             f.close()
             try:
+                stage = "parse_query_json"
                 query_json = _parse_json_response(raw_query_json)
             except Exception:
                 if model_type == 'local' and 'qwen' in llm_model_name.lower():
+                    stage = "parse_query_json_retry"
                     retry_prompt = (
                         query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n'
                         + '\nReturn ONLY a valid JSON object. No markdown, no explanation.'
@@ -467,16 +507,28 @@ def pipeline(
 
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
+        stage = "constraint_to_steps"
         print(f"[LLM] Constraint->Steps model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+        constraint_prompt = constraint_to_step_prompt + query + '\n' + 'Steps:\n'
+        if model_type == 'local' and 'qwen' in llm_model_name.lower():
+            constraint_prompt += (
+                "\nOutput format requirements:\n"
+                "- Use section headers exactly like: # Destination cities #, # Departure dates #, # Transportation methods #, "
+                "# Flight information #, # Driving information #, # Restaurant information #, # Attraction information #, "
+                "# Accommodation information #, # Budget #\n"
+                "- Put a blank line between sections.\n"
+                "- Each instruction line should start with '# '.\n"
+                "- Output steps only (no explanation).\n"
+            )
         if model_type == 'local':
             steps = Local_response(
-                constraint_to_step_prompt + query + '\n' + 'Steps:\n',
+                constraint_prompt,
                 model_name=llm_model_name,
                 timeout=llm_timeout,
                 max_tokens=llm_max_tokens,
             )
         elif model_type == 'gpt':
-            steps = GPT_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', llm_model_name, timeout=llm_timeout)
+            steps = GPT_response(constraint_prompt, llm_model_name, timeout=llm_timeout)
         elif model_type == 'claude': steps = Claude_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n', timeout=llm_timeout)
         elif model_type == 'mixtral': steps = Mixtral_response(constraint_to_step_prompt + query + '\n' + 'Steps:\n')
         else: ...
@@ -490,7 +542,10 @@ def pipeline(
         steps_processed = _strip_think_blocks(steps)
         step_blocks = _filter_step_blocks(steps_processed)
         if not step_blocks:
-            raise ValueError("No valid step blocks found in LLM response")
+            step_blocks = _split_steps_by_known_headers(steps_processed, list(step_to_code_prompts.keys()))
+        if not step_blocks:
+            preview = (steps_processed or "").replace("\n", " ")[:300]
+            raise ValueError(f"No valid step blocks found in LLM response. Preview: {preview}")
         for idx, step in enumerate(step_blocks):
             step_stripped = step.strip()
             if not step_stripped:
@@ -533,6 +588,7 @@ def pipeline(
 
             start = time.time()
             print(f"[LLM] Step->Code step={step_key} model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+            stage = f"step_to_code:{step_key}"
             if model_type == 'local':
                 code = Local_response(prompt + lines, model_name=llm_model_name, timeout=llm_timeout, max_tokens=llm_max_tokens)
             elif model_type == 'gpt':
@@ -569,6 +625,7 @@ def pipeline(
         with open(path+'codes/' + 'codes.txt', 'w') as f:
             f.write(codes)
         start = time.time()
+        stage = "exec_codes"
         exec(codes)
         exec_code = time.time()
         times.append(exec_code - start)
@@ -577,9 +634,10 @@ def pipeline(
             f.write(codes)
         f.close()
         with open(path+'plans/' + 'error.txt', 'w') as f:
-            f.write(str(e))
+            f.write(f"stage={stage}\n{str(e)}")
             # f.write(e.args)
         f.close()
+        print(f"[ERROR] stage={stage} err={e}")
     with open(path+'plans/' + 'time.txt', 'w') as f:
         for line in times:
             f.write(f"{line}\n")
