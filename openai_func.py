@@ -37,7 +37,7 @@ def _resolve_local_model_name(model_name):
     return stripped or os.environ.get("OLLAMA_MODEL", "llama2")
   return model_name
 
-def _ollama_chat_response(messages, model_name, timeout=999, max_tokens=None, num_predict=None):
+def _ollama_chat_response(messages, model_name, timeout=999, max_tokens=None, num_predict=None, stop=None):
   base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
   url = f"{base_url}/v1/chat/completions"
   api_key = os.environ.get("OLLAMA_API_KEY") or os.environ.get("OPENAI_API_KEY")
@@ -52,6 +52,8 @@ def _ollama_chat_response(messages, model_name, timeout=999, max_tokens=None, nu
     payload["max_tokens"] = int(max_tokens)
   if num_predict is not None:
     payload["max_tokens"] = int(num_predict)
+  if stop is not None:
+    payload["stop"] = stop
   _ollama_debug_log("ollama_chat_request", f"url={url}\nmodel={model_name}\n")
   resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
   if not resp.ok:
@@ -63,7 +65,7 @@ def _ollama_chat_response(messages, model_name, timeout=999, max_tokens=None, nu
   _ollama_debug_log("ollama_chat_response", _trim_text(resp.text))
   return data["choices"][0]["message"]["content"]
 
-def _ollama_generate_response(prompt, model_name, timeout=999, num_predict=None):
+def _ollama_generate_response(prompt, model_name, timeout=999, num_predict=None, stop=None):
   base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
   url = f"{base_url}/api/generate"
   payload = {
@@ -73,6 +75,8 @@ def _ollama_generate_response(prompt, model_name, timeout=999, num_predict=None)
   }
   if num_predict is not None:
     payload["options"] = {"num_predict": int(num_predict)}
+  if stop is not None:
+    payload.setdefault("options", {})["stop"] = stop
   _ollama_debug_log("ollama_generate_request", f"url={url}\nmodel={model_name}\n")
   resp = requests.post(url, json=payload, timeout=timeout)
   if not resp.ok:
@@ -84,7 +88,7 @@ def _ollama_generate_response(prompt, model_name, timeout=999, num_predict=None)
   _ollama_debug_log("ollama_generate_response", _trim_text(resp.text))
   return data.get("response", "")
 
-def Local_response(prompt, model_name="llama2", timeout=999, max_tokens=None, num_predict=None):
+def Local_response(prompt, model_name="llama2", timeout=999, max_tokens=None, num_predict=None, stop=None):
   model_name = _resolve_local_model_name(model_name)
   if num_predict is None and max_tokens is not None:
     num_predict = max_tokens
@@ -101,11 +105,12 @@ def Local_response(prompt, model_name="llama2", timeout=999, max_tokens=None, nu
       timeout=timeout,
       max_tokens=max_tokens,
       num_predict=num_predict,
+      stop=stop,
     )
   except Exception as e:
     chat_error = e
     try:
-      return _ollama_generate_response(prompt_text, model_name, timeout=timeout, num_predict=num_predict)
+      return _ollama_generate_response(prompt_text, model_name, timeout=timeout, num_predict=num_predict, stop=stop)
     except Exception as e:
       return f"[Local LLM Error] chat={chat_error}; generate={e}"
 

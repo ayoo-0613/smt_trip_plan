@@ -176,6 +176,51 @@ def _split_steps_by_known_headers(steps_text: str, known_headers: list) -> list:
         blocks.append("# " + current_key + " #\n" + "\n".join(current_lines))
     return blocks
 
+_STEP_HEADER_ALIASES = {
+    "destination city": "Destination cities",
+    "destination cities": "Destination cities",
+    "departure date": "Departure dates",
+    "departure dates": "Departure dates",
+    "transportation": "Transportation methods",
+    "transportation method": "Transportation methods",
+    "transportation methods": "Transportation methods",
+    "flight": "Flight information",
+    "flight info": "Flight information",
+    "flight information": "Flight information",
+    "driving": "Driving information",
+    "driving info": "Driving information",
+    "driving information": "Driving information",
+    "restaurant": "Restaurant information",
+    "restaurant info": "Restaurant information",
+    "restaurant information": "Restaurant information",
+    "attraction": "Attraction information",
+    "attraction info": "Attraction information",
+    "attraction information": "Attraction information",
+    "accommodation": "Accommodation information",
+    "accommodation info": "Accommodation information",
+    "accommodation information": "Accommodation information",
+    "budget": "Budget",
+}
+
+def _normalize_step_header(header: str, known_headers: list) -> str:
+    if not header:
+        return ""
+    header_norm = re.sub(r"\s+", " ", header.strip()).strip().lower()
+
+    alias_key = _STEP_HEADER_ALIASES.get(header_norm)
+    if alias_key:
+        return alias_key
+
+    for key in known_headers:
+        key_norm = re.sub(r"\s+", " ", str(key).strip()).strip().lower()
+        if not key_norm:
+            continue
+        if key_norm == header_norm:
+            return str(key)
+        if key_norm in header_norm or header_norm in key_norm:
+            return str(key)
+    return header.strip()
+
 
 def _safe_literal_eval(value):
     if pd.isna(value):
@@ -364,6 +409,9 @@ def pipeline(
     allow_remote: bool = False,
     llm_timeout: float = 999,
     llm_max_tokens: Optional[int] = None,
+    json_max_tokens: Optional[int] = None,
+    steps_max_tokens: Optional[int] = None,
+    code_max_tokens: Optional[int] = None,
 ):
     # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
     model_dir = model_dir or model
@@ -444,16 +492,19 @@ def pipeline(
 
     
     stage = "start"
+    json_token_limit = json_max_tokens if json_max_tokens is not None else llm_max_tokens
+    steps_token_limit = steps_max_tokens if steps_max_tokens is not None else llm_max_tokens
+    code_token_limit = code_max_tokens if code_max_tokens is not None else llm_max_tokens
     try:
         # json generated for postprocess only, not used in inputs to LLMs
-        print(f"[LLM] Query->JSON model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+        print(f"[LLM] Query->JSON model={llm_model_name} timeout={llm_timeout}s max_tokens={json_token_limit}")
         stage = "query_to_json"
         if model_type == 'local':
             raw_query_json = Local_response(
                 query_to_json_prompt + '{' + query + '}\n' + 'JSON:\n',
                 model_name=llm_model_name,
                 timeout=llm_timeout,
-                max_tokens=llm_max_tokens,
+                max_tokens=json_token_limit,
             )
         elif model_type == 'gpt':
             raw_query_json = GPT_response(
@@ -508,8 +559,9 @@ def pipeline(
         print('-----------------query in json format-----------------\n',query_json)
         start = time.time()
         stage = "constraint_to_steps"
-        print(f"[LLM] Constraint->Steps model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+        print(f"[LLM] Constraint->Steps model={llm_model_name} timeout={llm_timeout}s max_tokens={steps_token_limit}")
         constraint_prompt = constraint_to_step_prompt + query + '\n' + 'Steps:\n'
+        stop_sequences = None
         if model_type == 'local' and 'qwen' in llm_model_name.lower():
             constraint_prompt += (
                 "\nOutput format requirements:\n"
@@ -519,13 +571,16 @@ def pipeline(
                 "- Put a blank line between sections.\n"
                 "- Each instruction line should start with '# '.\n"
                 "- Output steps only (no explanation).\n"
+                "- End the output with a final line: # END #\n"
             )
+            stop_sequences = ["# END #"]
         if model_type == 'local':
             steps = Local_response(
                 constraint_prompt,
                 model_name=llm_model_name,
                 timeout=llm_timeout,
-                max_tokens=llm_max_tokens,
+                max_tokens=steps_token_limit,
+                stop=stop_sequences,
             )
         elif model_type == 'gpt':
             steps = GPT_response(constraint_prompt, llm_model_name, timeout=llm_timeout)
@@ -539,10 +594,16 @@ def pipeline(
             f.write(steps)
         f.close()
 
+        if stop_sequences and steps:
+            marker = stop_sequences[0]
+            if marker in steps:
+                steps = steps.split(marker, 1)[0].strip()
+
         steps_processed = _strip_think_blocks(steps)
         step_blocks = _filter_step_blocks(steps_processed)
         if not step_blocks:
-            step_blocks = _split_steps_by_known_headers(steps_processed, list(step_to_code_prompts.keys()))
+            headers = list(step_to_code_prompts.keys()) + list(_STEP_HEADER_ALIASES.keys())
+            step_blocks = _split_steps_by_known_headers(steps_processed, headers)
         if not step_blocks:
             preview = (steps_processed or "").replace("\n", " ")[:300]
             raise ValueError(f"No valid step blocks found in LLM response. Preview: {preview}")
@@ -563,6 +624,7 @@ def pipeline(
             # 去掉行首行尾的 #，取中间的标题文字
             # "# Destination cities #  " -> "Destination cities"
             header_clean = header_line.lstrip('#').rstrip('#').strip()
+            header_clean = _normalize_step_header(header_clean, list(step_to_code_prompts.keys()))
 
             # 剩下的行作为 body
             body_lines = lines_step[1:]
@@ -575,7 +637,9 @@ def pipeline(
             prompt = ''
             step_key = ''
             for key in step_to_code_prompts.keys():
-                if key in header_clean:
+                key_norm = re.sub(r"\s+", " ", str(key).strip()).strip().lower()
+                header_norm = re.sub(r"\s+", " ", str(header_clean).strip()).strip().lower()
+                if key_norm in header_norm or header_norm in key_norm:
                     print('!!!!!!!!!!KEY!!!!!!!!!!\n', key, '\n')
                     prompt = step_to_code_prompts[key]
                     step_key = key
@@ -587,10 +651,10 @@ def pipeline(
             lines = body  # 下面继续沿用原先逻辑
 
             start = time.time()
-            print(f"[LLM] Step->Code step={step_key} model={llm_model_name} timeout={llm_timeout}s max_tokens={llm_max_tokens}")
+            print(f"[LLM] Step->Code step={step_key} model={llm_model_name} timeout={llm_timeout}s max_tokens={code_token_limit}")
             stage = f"step_to_code:{step_key}"
             if model_type == 'local':
-                code = Local_response(prompt + lines, model_name=llm_model_name, timeout=llm_timeout, max_tokens=llm_max_tokens)
+                code = Local_response(prompt + lines, model_name=llm_model_name, timeout=llm_timeout, max_tokens=code_token_limit)
             elif model_type == 'gpt':
                 code = GPT_response(prompt + lines, llm_model_name, timeout=llm_timeout)
             elif model_type == 'claude':
@@ -695,6 +759,24 @@ if __name__ == '__main__':
         default=int(os.environ.get("LLM_MAX_TOKENS", "0")),
         help="Max tokens for a single LLM response (0 means no limit).",
     )
+    parser.add_argument(
+        "--json_max_tokens",
+        type=int,
+        default=int(os.environ.get("JSON_MAX_TOKENS", "0")),
+        help="Max tokens for Query->JSON response (0 means use --llm_max_tokens).",
+    )
+    parser.add_argument(
+        "--steps_max_tokens",
+        type=int,
+        default=int(os.environ.get("STEPS_MAX_TOKENS", "0")),
+        help="Max tokens for Constraint->Steps response (0 means use --llm_max_tokens).",
+    )
+    parser.add_argument(
+        "--code_max_tokens",
+        type=int,
+        default=int(os.environ.get("CODE_MAX_TOKENS", "0")),
+        help="Max tokens for Step->Code response (0 means use --llm_max_tokens).",
+    )
     args = parser.parse_args()
 
     if args.set_type == 'validation':
@@ -750,4 +832,7 @@ if __name__ == '__main__':
                 allow_remote=args.allow_remote,
                 llm_timeout=args.llm_timeout,
                 llm_max_tokens=(None if args.llm_max_tokens <= 0 else args.llm_max_tokens),
+                json_max_tokens=(None if args.json_max_tokens <= 0 else args.json_max_tokens),
+                steps_max_tokens=(None if args.steps_max_tokens <= 0 else args.steps_max_tokens),
+                code_max_tokens=(None if args.code_max_tokens <= 0 else args.code_max_tokens),
             )
