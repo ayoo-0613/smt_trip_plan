@@ -6,6 +6,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import importlib
 import ast
 from typing import List, Dict, Any, Optional
+import traceback
 import tiktoken
 from pandas import DataFrame
 from utils.func import load_line_json_data, save_file
@@ -139,6 +140,100 @@ def _filter_step_blocks(steps_text: str) -> list:
         if lines[0].lstrip().startswith("#"):
             blocks.append("\n".join(lines))
     return blocks
+
+def _extract_last_exec_line(traceback_text: str) -> Optional[int]:
+    if not traceback_text:
+        return None
+    matches = re.findall(r'File "<string>", line (\d+)', traceback_text)
+    if not matches:
+        return None
+    try:
+        return int(matches[-1])
+    except Exception:
+        return None
+
+def _format_code_excerpt(code: str, line: Optional[int], context: int = 25) -> str:
+    if not code:
+        return ""
+    lines = code.splitlines()
+    if not lines:
+        return ""
+    if not line or line <= 0:
+        start = 1
+        end = min(len(lines), context * 2)
+    else:
+        start = max(1, line - context)
+        end = min(len(lines), line + context)
+    out = []
+    for i in range(start, end + 1):
+        prefix = ">>" if line and i == line else "  "
+        out.append(f"{prefix}{i:04d}: {lines[i-1]}")
+    return "\n".join(out)
+
+def _default_repair_prompt() -> str:
+    return (
+        "You are a Python engineer fixing generated Python code.\n"
+        "The code will be executed with exec() inside an existing environment.\n"
+        "Assume the following names already exist and MUST be used as-is:\n"
+        "- CitySearch, FlightSearch, AttractionSearch, DistanceSearch, AccommodationSearch, RestaurantSearch\n"
+        "- s (z3 Optimize), variables (dict), query_json (dict), path (str)\n"
+        "- generate_as_plan(...), convert_to_int(...), get_arrivals_list(...), get_city_list(...)\n"
+        "Task:\n"
+        "- Fix the code so it executes without errors.\n"
+        "- Prefer minimal changes (indentation/scoping/typos/missing definitions).\n"
+        "- Do not add explanations. Do not use markdown fences. Output ONLY the corrected python code.\n"
+    )
+
+def _repair_codes_with_llm(
+    *,
+    model_type: str,
+    llm_model_name: str,
+    llm_timeout: float,
+    max_tokens: Optional[int],
+    repair_prompt: str,
+    query_json: dict,
+    steps_text: str,
+    codes: str,
+    stage: str,
+    error_text: str,
+    traceback_text: str,
+) -> str:
+    error_line = _extract_last_exec_line(traceback_text)
+    excerpt = _format_code_excerpt(codes, error_line, context=35)
+    user_prompt = (
+        repair_prompt.strip()
+        + "\n\n[Context]\n"
+        + f"stage={stage}\n"
+        + f"query_json={json.dumps(query_json, ensure_ascii=False)}\n\n"
+        + "[LLM Steps]\n"
+        + (steps_text or "").strip()
+        + "\n\n[Exception]\n"
+        + (traceback_text.strip() or error_text.strip())
+        + "\n\n[Code Excerpt]\n"
+        + excerpt
+        + "\n\n[Full Code]\n"
+        + codes
+        + "\n"
+    )
+    if model_type == 'local':
+        fixed = Local_response(
+            user_prompt,
+            model_name=llm_model_name,
+            timeout=llm_timeout,
+            max_tokens=max_tokens,
+        )
+    elif model_type == 'gpt':
+        fixed = GPT_response(user_prompt, llm_model_name, timeout=llm_timeout)
+    elif model_type == 'claude':
+        fixed = Claude_response(user_prompt, timeout=llm_timeout)
+    elif model_type == 'mixtral':
+        fixed = Mixtral_response(user_prompt, 'code')
+    else:
+        raise ValueError(f"Unknown model type: {model_type}")
+    fixed = _clean_code_response(fixed).replace('\\_', '_')
+    if not fixed.strip():
+        raise ValueError("LLM returned empty repaired code")
+    return fixed
 
 def _split_steps_by_known_headers(steps_text: str, known_headers: list) -> list:
     if not steps_text:
@@ -412,6 +507,9 @@ def pipeline(
     json_max_tokens: Optional[int] = None,
     steps_max_tokens: Optional[int] = None,
     code_max_tokens: Optional[int] = None,
+    auto_fix: bool = False,
+    max_fix_attempts: int = 2,
+    fix_max_tokens: Optional[int] = None,
 ):
     # ✅ 用 model 代替 gpt_nl，和 main 部分保持一致
     model_dir = model_dir or model
@@ -452,6 +550,12 @@ def pipeline(
         step_to_code_accommodation_prompt = file.read()
     with open('prompts/step_to_code_budget.txt', 'r') as file:
         step_to_code_budget_prompt = file.read()
+    repair_code_prompt = None
+    try:
+        with open('prompts/repair_code.txt', 'r') as file:
+            repair_code_prompt = file.read()
+    except Exception:
+        repair_code_prompt = None
         
     CitySearch = Cities()
     # CitySearch.run('Texas', 'Seattle',["2022-03-10", "2022-03-11", "2022-03-12", "2022-03-13", "2022-03-14", "2022-03-15", "2022-03-16"])
@@ -495,6 +599,8 @@ def pipeline(
     json_token_limit = json_max_tokens if json_max_tokens is not None else llm_max_tokens
     steps_token_limit = steps_max_tokens if steps_max_tokens is not None else llm_max_tokens
     code_token_limit = code_max_tokens if code_max_tokens is not None else llm_max_tokens
+    fix_token_limit = fix_max_tokens if fix_max_tokens is not None else code_token_limit
+    repair_code_prompt = repair_code_prompt or _default_repair_prompt()
     try:
         # json generated for postprocess only, not used in inputs to LLMs
         print(f"[LLM] Query->JSON model={llm_model_name} timeout={llm_timeout}s max_tokens={json_token_limit}")
@@ -671,7 +777,7 @@ def pipeline(
 
             step_code = time.time()
             times.append(step_code - start)
-            code = _clean_code_response(code).replace('\_', '_')
+            code = _clean_code_response(code).replace('\\_', '_')
             if step_key != 'Destination cities':
                 if query_json['days'] == 3:
                     code = code.replace('\n', '\n    ')
@@ -688,17 +794,49 @@ def pipeline(
             codes += f.read()
         with open(path+'codes/' + 'codes.txt', 'w') as f:
             f.write(codes)
-        start = time.time()
-        stage = "exec_codes"
-        exec(codes)
-        exec_code = time.time()
-        times.append(exec_code - start)
+        attempt = 0
+        while True:
+            start = time.time()
+            stage = "exec_codes" if attempt == 0 else f"exec_codes_fix_attempt_{attempt}"
+            try:
+                exec(codes)
+                exec_code = time.time()
+                times.append(exec_code - start)
+                break
+            except Exception as e:
+                exec_code = time.time()
+                times.append(exec_code - start)
+                tb_text = traceback.format_exc()
+                if not auto_fix or attempt >= max_fix_attempts:
+                    raise
+                attempt += 1
+                with open(path + 'plans/' + f'error_exec_attempt_{attempt}.txt', 'w') as f:
+                    f.write(f"stage={stage}\n{tb_text}")
+                with open(path + 'codes/' + f'codes_before_fix_attempt_{attempt}.txt', 'w') as f:
+                    f.write(codes)
+                codes = _repair_codes_with_llm(
+                    model_type=model_type,
+                    llm_model_name=llm_model_name,
+                    llm_timeout=llm_timeout,
+                    max_tokens=fix_token_limit,
+                    repair_prompt=repair_code_prompt,
+                    query_json=query_json,
+                    steps_text=steps_processed,
+                    codes=codes,
+                    stage=stage,
+                    error_text=str(e),
+                    traceback_text=tb_text,
+                )
+                with open(path + 'codes/' + f'codes_after_fix_attempt_{attempt}.txt', 'w') as f:
+                    f.write(codes)
+                with open(path + 'codes/' + 'codes.txt', 'w') as f:
+                    f.write(codes)
     except Exception as e:
         with open(path+'codes/' + 'codes.txt', 'w') as f:
             f.write(codes)
         f.close()
         with open(path+'plans/' + 'error.txt', 'w') as f:
-            f.write(f"stage={stage}\n{str(e)}")
+            f.write(f"stage={stage}\n{traceback.format_exc()}")
             # f.write(e.args)
         f.close()
         print(f"[ERROR] stage={stage} err={e}")
@@ -777,6 +915,23 @@ if __name__ == '__main__':
         default=int(os.environ.get("CODE_MAX_TOKENS", "0")),
         help="Max tokens for Step->Code response (0 means use --llm_max_tokens).",
     )
+    parser.add_argument(
+        "--auto_fix",
+        action="store_true",
+        help="Auto-repair generated codes on exec() errors (feeds traceback back to the LLM and retries).",
+    )
+    parser.add_argument(
+        "--max_fix_attempts",
+        type=int,
+        default=int(os.environ.get("MAX_FIX_ATTEMPTS", "2")),
+        help="Maximum number of exec() repair attempts when --auto_fix is enabled (default: 2).",
+    )
+    parser.add_argument(
+        "--fix_max_tokens",
+        type=int,
+        default=int(os.environ.get("FIX_MAX_TOKENS", "0")),
+        help="Max tokens for the repair response (0 means use --code_max_tokens / --llm_max_tokens).",
+    )
     args = parser.parse_args()
 
     if args.set_type == 'validation':
@@ -835,4 +990,7 @@ if __name__ == '__main__':
                 json_max_tokens=(None if args.json_max_tokens <= 0 else args.json_max_tokens),
                 steps_max_tokens=(None if args.steps_max_tokens <= 0 else args.steps_max_tokens),
                 code_max_tokens=(None if args.code_max_tokens <= 0 else args.code_max_tokens),
+                auto_fix=args.auto_fix,
+                max_fix_attempts=max(0, int(args.max_fix_attempts)),
+                fix_max_tokens=(None if args.fix_max_tokens <= 0 else args.fix_max_tokens),
             )
